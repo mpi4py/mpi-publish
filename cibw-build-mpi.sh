@@ -50,6 +50,7 @@ if test "$mpiname" = "openmpi"; then
         CC=cc
         CXX=c++
         --prefix="$PREFIX"
+        --enable-ipv6
         --disable-dlopen
         --disable-oshmem
         --without-ofi
