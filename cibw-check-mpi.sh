@@ -69,3 +69,22 @@ RUN mpicxx helloworld.cxx -o helloworld-cxx
 RUN command -v mpiexec
 RUN mpiexec -n 3 ./helloworld-c
 RUN mpiexec -n 3 ./helloworld-cxx
+
+if test "$mpiname" = "mpich"; then
+    case $(uname)-$(uname -m) in
+        Linux-x86_64)  ch4netmods=(ofi ucx) ;;
+        Linux-aarch64) ch4netmods=(ofi ucx) ;;
+        *)             ch4netmods=(ofi) ;;
+    esac
+    export MPICH_CH4_OFI_CAPABILITY_DEBUG=1
+    export MPICH_CH4_UCX_CAPABILITY_DEBUG=1
+    for netmod in "${ch4netmods[@]}"; do
+        printf "testing ch4:%s ... " "$netmod"
+        export MPICH_CH4_NETMOD="$netmod"
+        ./helloworld-c | grep -i "$netmod" > /dev/null
+        printf "OK\n"
+    done
+    unset MPICH_CH4_OFI_CAPABILITY_DEBUG
+    unset MPICH_CH4_UCX_CAPABILITY_DEBUG
+    unset MPICH_CH4_NETMOD
+fi

@@ -2,7 +2,6 @@
 set -euo pipefail
 
 mpiname="${MPINAME:-mpich}"
-variant="${VARIANT:-}"
 
 PROJECT=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 PACKAGE=$PROJECT/package
@@ -14,11 +13,16 @@ PREFIX=${PREFIX:-"/opt/$mpiname"}
 
 if test "$mpiname" = "mpich"; then
     version=$(sed -n 's/MPICH_VERSION=\(.*\)/\1/p' "$SOURCE"/maint/Version)
+    case $(uname)-$(uname -m) in
+        Linux-x86_64)  device=ch4:ofi,ucx ;;
+        Linux-aarch64) device=ch4:ofi,ucx ;;
+        *)             device=ch4:ofi ;;
+    esac
     options=(
         CC=cc
         CXX=c++
         --prefix="$PREFIX"
-        --with-device=ch4:"${variant:-ofi}"
+        --with-device="$device"
         --with-pm=hydra:gforker
         --with-libfabric=embedded
         --with-ucx=embedded
@@ -75,9 +79,6 @@ if test "$(uname)" = Darwin; then
     if test "$(uname -m)" = x86_64; then
         export MACOSX_DEPLOYMENT_TARGET="10.9"
         export ac_cv_func_aligned_alloc="no" # macOS>=10.15
-    fi
-    if test "$variant" = ucx; then
-        echo "ERROR: UCX is not supported on macOS"; exit 1;
     fi
 fi
 

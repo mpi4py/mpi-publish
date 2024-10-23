@@ -7,15 +7,18 @@ DESTDIR=package/install
 ARCHLIST=${ARCHLIST:-$(uname -m)}
 
 export CIBW_BUILD_FRONTEND='build'
-export CIBW_BUILD='cp312-*'
+export CIBW_BUILD='cp313-*'
 export CIBW_SKIP='*musllinux*'
 export CIBW_ARCHS=$ARCHLIST
 export CIBW_BEFORE_ALL='bash {project}/cibw-build-mpi.sh'
 export CIBW_TEST_COMMAND='bash {project}/cibw-check-mpi.sh'
-export CIBW_ENVIRONMENT_PASS='MPINAME VARIANT RELEASE SOURCE WORKDIR DESTDIR'
+export CIBW_ENVIRONMENT_PASS='MPINAME RELEASE SOURCE WORKDIR DESTDIR'
 export CIBW_REPAIR_WHEEL_COMMAND_MACOS='delocate-wheel --ignore-missing-dependencies --exclude libmpi --exclude libpmpi --require-archs {delocate_archs -w {dest_dir} -v {wheel}'
 
 if test "$(uname)" = Linux; then
+    if command -v podman > /dev/null; then
+        export CIBW_CONTAINER_ENGINE=podman
+    fi
     export SOURCE="/project/$SOURCE"
     export WORKDIR="/host/$PWD/$WORKDIR"
     export DESTDIR="/host/$PWD/$DESTDIR"
