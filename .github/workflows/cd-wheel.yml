@@ -158,6 +158,10 @@ jobs:
         echo SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH >> $GITHUB_ENV
         echo $(git log -1 --pretty=%ci) [timestamp=$SOURCE_DATE_EPOCH]
 
+    - id: setup-uv
+      if:  ${{ runner.os == 'macOS' }}
+      run: brew install uv
+
     - id: build
       uses: pypa/cibuildwheel@v2.21.3
       timeout-minutes: 360
@@ -165,7 +169,7 @@ jobs:
         package-dir: package
         output-dir:  wheelhouse
       env:
-        CIBW_BUILD_FRONTEND: "build"
+        CIBW_BUILD_FRONTEND: "build[uv]"
         CIBW_BUILD: "cp312-*"
         CIBW_SKIP:  "*musllinux*"
         CIBW_ARCHS: "${{ matrix.arch }}"
