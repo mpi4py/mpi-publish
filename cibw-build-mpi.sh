@@ -11,6 +11,12 @@ WORKDIR=${WORKDIR:-$PACKAGE/workdir}
 DESTDIR=${DESTDIR:-$PACKAGE/install}
 PREFIX=${PREFIX:-"/opt/$mpiname"}
 
+if test "$CIBUILDWHEEL" = 1; then
+    if test "$(id -u)" -eq 0; then
+        yum remove -y libatomic
+    fi
+fi
+
 if test "$mpiname" = "mpich"; then
     version=$(sed -n 's/MPICH_VERSION=\(.*\)/\1/p' "$SOURCE"/maint/Version)
     options=(
