@@ -1,0 +1,25 @@
+commit 07a54b7025fbc8fa745d55e5c3a66c56a62cdb14
+Author: Maxwell Coil <mcoil@nd.edu>
+Date:   Sun Dec 8 13:56:00 2019 -0500
+
+    memory/patcher: fix compiler warning
+    
+    syscall() returns a long, but we are invoking shmat(), which returns
+    a void*.
+    
+    Signed-off-by: Maxwell Coil <mcoil@nd.edu>
+    (cherry picked from commit 52a9cce6f3dcd87e9ae66177398b60b9317e9339)
+
+diff --git a/opal/mca/memory/patcher/memory_patcher_component.c b/opal/mca/memory/patcher/memory_patcher_component.c
+index 687d430fa3..272ec72122 100644
+--- a/opal/mca/memory/patcher/memory_patcher_component.c
++++ b/opal/mca/memory/patcher/memory_patcher_component.c
+@@ -440,7 +440,7 @@ static void *_intercept_shmat(int shmid, const void *shmaddr, int shmflg)
+ 
+     if (!original_shmat) {
+ #if defined(SYS_shmat)
+-        result = memory_patcher_syscall(SYS_shmat, shmid, shmaddr, shmflg);
++        result = (void*) memory_patcher_syscall(SYS_shmat, shmid, shmaddr, shmflg);
+ #else // IPCOP_shmat
+         unsigned long ret;
+         ret = memory_patcher_syscall(SYS_ipc, IPCOP_shmat,
