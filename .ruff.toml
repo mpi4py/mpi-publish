@@ -1,0 +1,33 @@
+target-version = "py37"
+
+lint.select = [
+"A",
+"B",
+"C",
+"D",
+"E",
+"F",
+"G",
+"I",
+"Q",
+"S",
+"W",
+"UP",
+"ISC",
+"PIE",
+#"PTH",
+"RET",
+"RUF",
+"TRY",
+"YTT",
+]
+
+lint.ignore = [
+]
+
+[lint.per-file-ignores]
+"package/setup.py" = ["A001", "D"]
+"patches/*" = ["D"]
+
+[lint.pydocstyle]
+convention = "pep257"

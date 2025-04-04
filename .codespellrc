@@ -1,4 +1,3 @@
-# https://github.com/codespell-project/codespell #-*- mode: conf -*-
-
 [codespell]
+skip = dist,patches,.git,.tox,.*_cache
 ignore-words-list = pevent
