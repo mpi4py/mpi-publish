@@ -36,6 +36,10 @@ on:  # yamllint disable-line rule:truthy
           - macOS
           - macOS-arm64
           - macOS-x86_64
+      publish-pypi:
+        description: "Publish to PyPI"
+        default: false
+        type: boolean
       publish-anaconda:
         description: "Publish to Anaconda"
         default: false
@@ -50,6 +54,38 @@ jobs:
       version: ${{ inputs.version }}
       release: ${{ inputs.release }}
       os-arch: ${{ inputs.os-arch }}
+
+  publish-pypy:
+    if: ${{ inputs.publish-pypi }}
+    runs-on: ubuntu-latest
+    needs: sdist
+    environment:  # TODO: update url to pypi.org
+      name: pypi
+      url: https://test.pypi.org/p/${{ inputs.mpiname }}
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+
+    steps:
+
+    - name: Download wheel artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: dist
+        pattern: wheel-*
+        merge-multiple: true
+
+    - if: ${{ false }}  # TODO: remove 'if' condition
+      name: Attest wheel artifacts
+      uses: actions/attest-build-provenance@v2
+      with:
+        subject-path: dist/*.whl
+
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with: # TODO: remove repository-url
+        repository-url: https://test.pypi.org/legacy/
 
   publish-anaconda:
     if: ${{ inputs.publish-anaconda }}
