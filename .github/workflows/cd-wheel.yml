@@ -179,9 +179,9 @@ jobs:
       run: |
         # sha256sum
         test $(uname) == Darwin && sha256sum() { shasum -a 256 $@; } || true
-        echo '```'         >> $GITHUB_STEP_SUMMARY
-        sha256sum -b *.whl >> $GITHUB_STEP_SUMMARY
-        echo '```'         >> $GITHUB_STEP_SUMMARY
+        echo '```'         >> "$GITHUB_STEP_SUMMARY"
+        sha256sum -b *.whl >> "$GITHUB_STEP_SUMMARY"
+        echo '```'         >> "$GITHUB_STEP_SUMMARY"
       working-directory: wheelhouse
 
     - id: upload

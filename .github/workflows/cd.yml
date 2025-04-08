@@ -76,6 +76,14 @@ jobs:
         pattern: wheel-*
         merge-multiple: true
 
+    - name: Report sha256sum
+      run:  |
+        # Report sha256sum
+        echo '```'         >> "$GITHUB_STEP_SUMMARY"
+        sha256sum -b *.whl >> "$GITHUB_STEP_SUMMARY"
+        echo '```'         >> "$GITHUB_STEP_SUMMARY"
+      working-directory: dist
+
     - if: ${{ false }}  # TODO: remove 'if' condition
       name: Attest wheel artifacts
       uses: actions/attest-build-provenance@v2
@@ -107,9 +115,9 @@ jobs:
     - name: Report sha256sum
       run:  |
         # Report sha256sum
-        echo '```'         >> $GITHUB_STEP_SUMMARY
-        sha256sum -b *.whl >> $GITHUB_STEP_SUMMARY
-        echo '```'         >> $GITHUB_STEP_SUMMARY
+        echo '```'         >> "$GITHUB_STEP_SUMMARY"
+        sha256sum -b *.whl >> "$GITHUB_STEP_SUMMARY"
+        echo '```'         >> "$GITHUB_STEP_SUMMARY"
       working-directory: dist
 
     - name: Setup Micromamba

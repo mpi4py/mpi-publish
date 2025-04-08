@@ -46,3 +46,28 @@ jobs:
     with:
       mpiname: openmpi
       version: 4.1.7
+
+  wheelhouse:
+    runs-on: ubuntu-latest
+    needs:
+      - mpich-43
+      - mpich-42
+      - mpich-41
+      - openmpi-50
+      - openmpi-41
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        path: wheelhouse
+        pattern: wheel-*
+        merge-multiple: true
+    - run: |
+        # sha256sum
+        echo '```'         >> "$GITHUB_STEP_SUMMARY"
+        sha256sum -b *.whl >> "$GITHUB_STEP_SUMMARY"
+        echo '```'         >> "$GITHUB_STEP_SUMMARY"
+      working-directory: wheelhouse
+    - uses: actions/upload-artifact@v4
+      with:
+        name: wheelhouse
+        path: wheelhouse/*.whl
