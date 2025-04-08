@@ -24,11 +24,12 @@ with open("METADATA") as fobj:
     metadata = re.search(r"""
     Name:\s*(?P<name>.*)\n
     Version:\s*(?P<version>.*)\n
+    Release:\s*(?P<release>.*)\n
     """, fobj.read(), re.VERBOSE).groupdict()
 
 mpiname = metadata["name"]
 version = metadata["version"]
-release = os.environ.get("RELEASE", "")
+release = metadata["release"]
 if release:
     version += f".post{release}"
 

@@ -164,8 +164,6 @@ jobs:
           bash {project}/cibw-patch-cmd.sh
         CIBW_TEST_COMMAND: >-
           bash {project}/cibw-check-mpi.sh
-        CIBW_ENVIRONMENT_PASS: >-
-          MPINAME RELEASE
         CIBW_ENVIRONMENT_LINUX: >-
           SOURCE="/project/package/source"
           WORKDIR="/project/package/workdir"
@@ -189,8 +187,9 @@ jobs:
     - id: upload
       uses: actions/upload-artifact@v4
       with:
-        name: "wheel-${{ inputs.mpiname }}-\
-              ${{ inputs.version || 'latest' }}-\
+        name: "wheel-\
+              ${{ steps.bootstrap.outputs.mpiname }}-\
+              ${{ steps.bootstrap.outputs.version }}-\
               ${{ matrix.os }}-${{ matrix.arch }}"
         path: wheelhouse/*.whl
 
@@ -202,7 +201,9 @@ jobs:
         # ./wheel-test.sh
         test $(uname) = Linux && runner=(
         docker run
-        -e MPINAME=${{ inputs.mpiname }}
+        -e MPINAME=${{ steps.bootstrap.outputs.mpiname }}
+        -e VERSION=${{ steps.bootstrap.outputs.version }}
+        -e RELEASE=${{ steps.bootstrap.outputs.release }}
         -v $(pwd):/${{ github.workspace }}
         -w ${{ github.workspace }}
         --platform linux/${{

@@ -1,11 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
-mpiname="${MPINAME:-mpich}"
-case "$mpiname" in
-    mpich)   version=$(mpichversion --version | cut -d':' -f 2) ;;
-    openmpi) version=$(ompi_info --version | head -n 1 | cut -d'v' -f 2) ;;
-esac
+if command -v mpichversion > /dev/null; then
+    mpiname=mpich
+    version=$(mpichversion --version | cut -d':' -f 2)
+elif command -v ompi_info > /dev/null; then
+    mpiname=openmpi
+    version=$(ompi_info --version | head -n 1 | cut -d'v' -f 2)
+fi
 
 tempdir="$(mktemp -d)"
 trap 'rm -rf $tempdir' EXIT

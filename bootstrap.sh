@@ -7,6 +7,7 @@ case "$mpiname" in
     openmpi) version=5.0.7 ;;
 esac
 version=${VERSION:-$version}
+release=${RELEASE:-}
 
 ucxversion=1.18.0
 ofiversion=1.22.0
@@ -73,11 +74,13 @@ if test ! -d "$SOURCE"; then
     echo writing package metadata ...
     echo "Name: $mpiname" > "$PACKAGE/METADATA"
     echo "Version: $version" >> "$PACKAGE/METADATA"
+    echo "Release: $release" >> "$PACKAGE/METADATA"
 else
     echo reusing directory "$SOURCE"...
     check() { test "$(awk "/$1/"'{print $2}' "$PACKAGE/METADATA")" = "$2"; }
-    check Name    "$mpiname" || (echo not "$mpiname-$version"!!! && exit 1)
-    check Version "$version" || (echo not "$mpiname-$version"!!! && exit 1)
+    check Name    "$mpiname" || (echo "error: mpiname!=$mpiname" && exit 1)
+    check Version "$version" || (echo "error: version!=$version" && exit 1)
+    check Release "$release" || (echo "error: release!=$release" && exit 1)
 fi
 
 if test "$(uname)" = "Linux"; then
@@ -188,3 +191,9 @@ for license in "${otherlicenses[@]}"; do
     echo copying "$module" license file...
     cp "$license" "$PACKAGE/LICENSE.$module"
 done
+
+if test -n "${GITHUB_OUTPUT+x}"; then
+    echo "mpiname=${mpiname}" >> $GITHUB_OUTPUT
+    echo "version=${version}" >> $GITHUB_OUTPUT
+    echo "release=${release}" >> $GITHUB_OUTPUT
+fi

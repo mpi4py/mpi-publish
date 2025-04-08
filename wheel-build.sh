@@ -16,7 +16,7 @@ export CIBW_ARCHS=$ARCHLIST
 export CIBW_BEFORE_ALL='bash {project}/cibw-build-mpi.sh'
 export CIBW_BEFORE_BUILD='bash {project}/cibw-patch-cmd.sh'
 export CIBW_TEST_COMMAND='bash {project}/cibw-check-mpi.sh'
-export CIBW_ENVIRONMENT_PASS='MPINAME RELEASE SOURCE WORKDIR DESTDIR'
+export CIBW_ENVIRONMENT_PASS='SOURCE WORKDIR DESTDIR'
 export CIBW_MANYLINUX_AARCH64_IMAGE=manylinux2014
 export CIBW_MANYLINUX_X86_64_IMAGE=manylinux2014
 
