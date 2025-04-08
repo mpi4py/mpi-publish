@@ -84,7 +84,7 @@ jobs:
 
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
-      with: # TODO: remove repository-url
+      with:  # TODO: remove repository-url
         repository-url: https://test.pypi.org/legacy/
 
   publish-anaconda:
