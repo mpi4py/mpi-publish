@@ -88,6 +88,7 @@ RUN mpicxx -show
 RUN mpicxx helloworld.cxx -o helloworld-cxx
 
 RUN command -v mpiexec
+RUN mpiexec -help
 RUN mpiexec -n 3 ./helloworld-c
 RUN mpiexec -n 3 ./helloworld-cxx
 

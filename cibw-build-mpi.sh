@@ -41,7 +41,9 @@ if test "$(uname)" = Linux; then
     build_ldflags+=("-Wl,--as-needed")
 fi
 if test "$(uname)" = Darwin; then
+    build_ldflags+=("-Wl,-reproducible")
     build_ldflags+=("-Wl,-dead_strip_dylibs")
+    build_ldflags+=("-Wl,-headerpad_max_install_names")
 fi
 
 case "$mpiname" in
@@ -409,6 +411,22 @@ if test "$(uname)" = Darwin; then
     ln -s "$libpmpi" libpmpi.dylib
 fi
 
+if test "$(uname)-$(uname -m)" = Darwin-arm64; then
+    binaries=(
+        "${DESTDIR}${PREFIX}"/lib/libpmpi.*.dylib
+        "${DESTDIR}${PREFIX}"/lib/libmpi.*.dylib
+        "${DESTDIR}${PREFIX}"/bin/hydra*
+        "${DESTDIR}${PREFIX}"/bin/mpich*
+        "${DESTDIR}${PREFIX}"/bin/mpirun
+        "${DESTDIR}${PREFIX}"/bin/mpivars
+        "${DESTDIR}${PREFIX}"/bin/mpiexec*
+    )
+    for bin in  "${binaries[@]}"; do
+        test ! -L "$bin" || continue
+        codesign --force --options linker-signed --sign - "$bin"
+    done
+fi
+
 } # fixup-mpi-mpich()
 
 fixup-mpi-openmpi() {
@@ -657,6 +675,27 @@ for exe in "${executables[@]}"; do
     test -L "$exe" || continue
     install -s "$wrapper_bin" "$exe"
 done
+
+if test "$(uname)-$(uname -m)" = Darwin-arm64; then
+    binaries=()
+    if test -d "${DESTDIR}${PREFIX}"/lib/openmpi; then
+       binaries+=(
+           "${DESTDIR}${PREFIX}"/lib/openmpi/libevent*.*.dylib
+           "${DESTDIR}${PREFIX}"/lib/openmpi/libhwloc.*.dylib
+           "${DESTDIR}${PREFIX}"/lib/openmpi/libpmix.*.dylib
+           "${DESTDIR}${PREFIX}"/lib/openmpi/libprrte.*.dylib
+       )
+    fi
+    binaries+=(
+        "${DESTDIR}${PREFIX}"/lib/libopen-*.*.dylib
+        "${DESTDIR}${PREFIX}"/lib/libmpi.*.dylib
+        "${DESTDIR}${PREFIX}"/bin/*
+    )
+    for bin in  "${binaries[@]}"; do
+        test ! -L "$bin" || continue
+        codesign --force --options linker-signed --sign - "$bin"
+    done
+fi
 
 } # fixup-mpi-openmpi()
 

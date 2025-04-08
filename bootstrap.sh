@@ -193,7 +193,8 @@ for license in "${otherlicenses[@]}"; do
 done
 
 if test -n "${GITHUB_OUTPUT+x}"; then
-    echo "mpiname=${mpiname}" >> $GITHUB_OUTPUT
-    echo "version=${version}" >> $GITHUB_OUTPUT
-    echo "release=${release}" >> $GITHUB_OUTPUT
+    # shellcheck disable=SC2129
+    echo "mpiname=${mpiname}" >> "$GITHUB_OUTPUT"
+    echo "version=${version}" >> "$GITHUB_OUTPUT"
+    echo "release=${release}" >> "$GITHUB_OUTPUT"
 fi

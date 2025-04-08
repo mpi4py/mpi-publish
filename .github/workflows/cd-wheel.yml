@@ -122,9 +122,9 @@ jobs:
         # unlink libevent
         brew unlink libevent || true
         # install autotools
-        brew install autoconf
-        brew install automake
-        brew install libtool
+        command -v autoconf || brew install autoconf
+        command -v automake || brew install automake
+        command -v libtool  || brew install libtool
         # install uv
         brew install uv
 
