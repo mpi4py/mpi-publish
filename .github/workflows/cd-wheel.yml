@@ -4,52 +4,31 @@ permissions:
   contents: read
 
 on:  # yamllint disable-line rule:truthy
-  workflow_call:
-    inputs:
-      mpiname:
-        description: 'MPI Name'
-        default: 'mpich'
-        required: false
-        type: string
-      version:
-        description: 'MPI Version'
-        default: ''
-        required: false
-        type: string
-      release:
-        description: 'Release number'
-        default: ''
-        required: false
-        type: string
-      os-arch:
-        description: 'Target OS-Architecture'
-        default: ''
-        required: false
-        type: string
   workflow_dispatch:
     inputs:
       mpiname:
-        description: 'MPI'
-        default: 'mpich'
+        description: 'MPI Name'
+        required: false
         type: choice
+        default: 'mpich'
         options:
           - mpich
           - openmpi
       version:
-        description: 'Version'
-        default: ''
+        description: 'MPI Version'
         required: false
         type: string
+        default: ''
       release:
         description: 'Release number'
-        default: ''
         required: false
         type: string
+        default: ''
       os-arch:
         description: "Target OS-Architecture"
-        default: Linux-x86_64
-        required: true
+        required: false
         type: choice
+        default: Linux-x86_64
         options:
           - all
           - Linux
@@ -58,6 +37,28 @@ on:  # yamllint disable-line rule:truthy
           - macOS
           - macOS-arm64
           - macOS-x86_64
+  workflow_call:
+    inputs:
+      mpiname:
+        description: 'MPI Name'
+        required: false
+        type: string
+        default: 'mpich'
+      version:
+        description: 'MPI Version'
+        required: false
+        type: string
+        default: ''
+      release:
+        description: 'Release number'
+        required: false
+        type: string
+        default: ''
+      os-arch:
+        description: 'Target OS-Architecture'
+        required: false
+        type: string
+        default: ''
 
 env:
   MPINAME: '${{ inputs.mpiname }}'

@@ -8,26 +8,27 @@ on:  # yamllint disable-line rule:truthy
     inputs:
       mpiname:
         description: 'MPI Name'
-        default: 'mpich'
+        required: false
         type: choice
+        default: 'mpich'
         options:
           - mpich
           - openmpi
       version:
         description: 'MPI Version'
-        default: ''
         required: false
+        default: ''
         type: string
       release:
         description: 'Release number'
-        default: ''
         required: false
+        default: ''
         type: string
       os-arch:
         description: "Target OS-Architecture"
-        default: all
-        required: true
+        required: false
         type: choice
+        default: all
         options:
           - all
           - Linux
@@ -38,10 +39,12 @@ on:  # yamllint disable-line rule:truthy
           - macOS-x86_64
       publish-pypi:
         description: "Publish to PyPI"
+        required: false
         default: false
         type: boolean
       publish-anaconda:
         description: "Publish to Anaconda"
+        required: false
         default: false
         type: boolean
 
@@ -58,7 +61,7 @@ jobs:
   publish-pypy:
     if: ${{ inputs.publish-pypi }}
     runs-on: ubuntu-latest
-    needs: sdist
+    needs: wheel
     environment:  # TODO: update url to pypi.org
       name: pypi
       url: https://test.pypi.org/p/${{ inputs.mpiname }}

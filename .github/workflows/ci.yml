@@ -71,3 +71,4 @@ jobs:
       with:
         name: wheelhouse
         path: wheelhouse/*.whl
+        retention-days: 1
