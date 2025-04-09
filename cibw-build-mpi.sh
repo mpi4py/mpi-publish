@@ -699,12 +699,44 @@ fi
 
 } # fixup-mpi-openmpi()
 
+fixup-mpi-library() {
+
+cd "${DESTDIR}${PREFIX}/lib"
+
+if test "$(uname)" = Linux; then
+    for linklib in lib*mpi.so; do
+        target=$(readlink "$linklib")
+        unlink "$linklib"
+        echo "INPUT($target)" > "$linklib"
+    done
+fi
+
+if test "$(uname)" = Darwin; then
+    for linklib in lib*mpi.dylib; do
+        target=$(readlink "$linklib")
+        unlink "$linklib"
+        idname="@rpath/$target"
+        ldname="@loader_path/$target"
+        ldflags=("${build_ldflags[@]/-Wl,-dead_strip_dylibs}")
+        ldflags+=("-Wl,-reexport_library,$target")
+        cc -shared "${ldflags[@]}" -o "$linklib"
+        install_name_tool -change "$idname" "$ldname" "$linklib"
+        install_name_tool -id "$idname" "$linklib"
+        if test "$(uname -m)" = arm64; then
+            codesign --force --options linker-signed --sign - "$linklib"
+        fi
+    done
+fi
+
+} # fixup-mpi-library()
+
 echo fixing UCX install tree
 fixup-ucx
 echo fixing OFI install tree
 fixup-ofi
 echo fixing MPI install tree
 fixup-mpi-"$mpiname"
+fixup-mpi-library
 
 echo checking install tree
 cd "${DESTDIR}${PREFIX}"
