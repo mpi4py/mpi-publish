@@ -122,8 +122,11 @@ if test "$mpiname" = "mpich"; then
         --disable-libxml2
         --disable-dependency-tracking
     )
-    if test "${version}" \< "4.3.0"; then
-        options=("${options[@]/--with-device=ch4:ucx,ofi/--with-device=ch4:ofi,ucx}")
+    if [[ "$netmod" != *ucx* ]]; then
+        options=("${options[@]/--with-ucx=embedded}")
+    fi
+    if [[ "$netmod" != *ofi* ]]; then
+        options=("${options[@]/--with-libfabric=embedded}")
     fi
     if test -d "$SOURCE"/modules/ucx-*; then
         options=("${options[@]/--with-ucx=embedded/--with-ucx=$DESTDIR$PREFIX}")
@@ -139,13 +142,22 @@ if test "$mpiname" = "mpich"; then
     export BASH_SHELL="/bin/bash"
     export MPICHLIB_CFLAGS="${build_cflags[*]}"
     export MPICHLIB_LDFLAGS="${build_ldflags[*]}"
-    if test "${version%%.*}" -lt 4; then
-        options=("${options[@]/--disable-cxx}")
+    if test "${version}" \< "4.0.0"; then
         options=("${options[@]}" --disable-numa)
         export CFLAGS=$MPICHLIB_CFLAGS
-        export LDFLAGS=$MPICHLIB_LDFLAGS
+    fi
+    if test "${version}" \< "4.1.0"; then
+        options=("${options[@]/--disable-cxx}")
         export FFLAGS=-fallow-argument-mismatch
         export FCFLAGS=-fallow-argument-mismatch
+    fi
+    if test "${version}" \< "4.2.0"; then
+        export LDFLAGS=$MPICHLIB_LDFLAGS
+    fi
+    if test "${version}" \< "4.3.0"; then
+        options=("${options[@]/--with-device=ch4:ucx,ofi/--with-device=ch4:ofi,ucx}")
+    fi
+    if test "$(uname)" = Linux; then
         export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}:$DESTDIR$PREFIX/lib"
     fi
     if test "$(uname)" = Darwin; then
@@ -339,6 +351,7 @@ for script in "${scripts[@]}"; do
     topdir='$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE:-$0}")/.." \&\& pwd)'
     sed -i.orig s@^prefix=.*@prefix="$topdir"@ "$script"
     sed -i.orig s:"\s*${build_cflags[*]}"::g "$script"
+    sed -i.orig s:"\s*${build_ldflags[*]}"::g "$script"
     sed -i.orig s:"$PREFIX":\"\$\{prefix\}\":g "$script"
     sed -i.orig s:"$WORKDIR.*/lib.*\.la"::g "$script"
     sed -i.orig s:"$DESTDIR.*/lib.*\.la"::g "$script"

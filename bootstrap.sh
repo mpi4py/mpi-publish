@@ -18,6 +18,8 @@ PROJECT=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 PACKAGE=$PROJECT/package
 SOURCE=$PACKAGE/source
 
+echo MPINAME="$mpiname"
+echo VERSION="$version"
 if test "$mpiname" = "mpich"; then
     urlbase="https://www.mpich.org/static/downloads/$version"
     tarball="$mpiname-$version.tar.gz"
@@ -44,6 +46,16 @@ if test ! -d "$SOURCE"; then
         if test "${version}" \< "4.2.0"; then
             disable_doc='s/^\(install-data-local:\s\+\)\$/\1#\$/'
             sed -i.orig "$disable_doc" "$SOURCE"/Makefile.in
+        fi
+        if test "${version}" \< "4.3.0"; then
+            if test -d "$SOURCE"/modules/yaksa; then
+                cd "$SOURCE"/modules/yaksa
+                echo regenerating yaksa with nesting level 2
+                src/backend/seq/genpup.py --pup-max-nesting 2
+                cd src/backend/seq/pup
+                find . -type f -exec touch -r . {} \;
+                cd "$PROJECT"
+            fi
         fi
     fi
     if test "$mpiname" = "openmpi"; then
@@ -78,9 +90,9 @@ if test ! -d "$SOURCE"; then
 else
     echo reusing directory "$SOURCE"...
     check() { test "$(awk "/$1/"'{print $2}' "$PACKAGE/METADATA")" = "$2"; }
-    check Name    "$mpiname" || (echo "error: mpiname!=$mpiname" && exit 1)
-    check Version "$version" || (echo "error: version!=$version" && exit 1)
-    check Release "$release" || (echo "error: release!=$release" && exit 1)
+    check Name    "$mpiname" || (echo "error: MPINAME!=$mpiname" && exit 1)
+    check Version "$version" || (echo "error: VERSION!=$version" && exit 1)
+    check Release "$release" || (echo "error: RELEASE!=$release" && exit 1)
 fi
 
 if test "$(uname)" = "Linux"; then
