@@ -29,6 +29,12 @@ jobs:
       mpiname: mpich
       version: 4.1.3
 
+  mpich-40:
+    uses: ./.github/workflows/cd-wheel.yml
+    with:
+      mpiname: mpich
+      version: 4.0.3
+
   mpich-34:
     uses: ./.github/workflows/cd-wheel.yml
     with:
