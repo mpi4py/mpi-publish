@@ -59,6 +59,8 @@ jobs:
       - mpich-43
       - mpich-42
       - mpich-41
+      - mpich-40
+      - mpich-34
       - openmpi-50
       - openmpi-41
     steps:
