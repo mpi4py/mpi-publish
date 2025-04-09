@@ -653,7 +653,7 @@ executables=(mpicc mpic++ mpicxx mpiCC ortecc)
 for exe in "${executables[@]}"; do
     test -e "$exe" || continue
     test -L "$exe" || continue
-    install "$wrapper_bin" "$exe"
+    install -s "$wrapper_bin" "$exe"
 done
 
 cd "${DESTDIR}${PREFIX}/bin"
