@@ -11,6 +11,7 @@ DESTDIR=${DESTDIR:-$PACKAGE/install}
 test -f "$PACKAGE"/METADATA
 mpiname=$(awk '/Name/{print $2}' "$PACKAGE"/METADATA)
 version=$(awk '/Version/{print $2}' "$PACKAGE"/METADATA)
+pypiurl="https://pypi.org/p/$mpiname/$version/"
 
 case $(uname) in
     Linux)  njobs=$(nproc);;
@@ -112,6 +113,7 @@ if test "$mpiname" = "mpich"; then
         --with-libfabric=embedded
         --with-hwloc=embedded
         --with-yaksa=embedded
+        --with-custom-version-string="$pypiurl"
         --disable-cxx
         --disable-doc
         --disable-debug
@@ -141,10 +143,14 @@ if test "$mpiname" = "mpich"; then
     generated_files+=(modules/ucx/src/tools/info/build_config.h)
     export BASH_SHELL="/bin/bash"
     export MPICHLIB_CFLAGS="${build_cflags[*]}"
+    export MPICHLIB_CXXFLAGS="${build_cflags[*]}"
     export MPICHLIB_LDFLAGS="${build_ldflags[*]}"
     if test "${version}" \< "4.0.0"; then
         options=("${options[@]}" --disable-numa)
         export CFLAGS=$MPICHLIB_CFLAGS
+        unset MPICHLIB_CFLAGS
+        export CXXFLAGS=$MPICHLIB_CXXFLAGS
+        unset MPICHLIB_CXXFLAGS
     fi
     if test "${version}" \< "4.1.0"; then
         options=("${options[@]/--disable-cxx}")
@@ -153,6 +159,7 @@ if test "$mpiname" = "mpich"; then
     fi
     if test "${version}" \< "4.2.0"; then
         export LDFLAGS=$MPICHLIB_LDFLAGS
+        unset MPICHLIB_LDFLAGS
     fi
     if test "${version}" \< "4.3.0"; then
         options=("${options[@]/--with-device=ch4:ucx,ofi/--with-device=ch4:ofi,ucx}")
@@ -237,6 +244,9 @@ if test ! -e "$WORKDIR"/config.log; then
             sed -i.orig "/-D.*_BUILD_CFLAGS=/$source" "$filename"
             sed -i.orig "/-D.*_BUILD_CFLAGS=/$workdir" "$filename"
             sed -i.orig "/-D.*_BUILD_CFLAGS=/$destdir" "$filename"
+            sed -i.orig "/-D.*_BUILD_CXXFLAGS=/$source" "$filename"
+            sed -i.orig "/-D.*_BUILD_CXXFLAGS=/$workdir" "$filename"
+            sed -i.orig "/-D.*_BUILD_CXXFLAGS=/$destdir" "$filename"
             sed -i.orig "/-D.*_BUILD_CPPFLAGS=/$source" "$filename"
             sed -i.orig "/-D.*_BUILD_CPPFLAGS=/$workdir" "$filename"
             sed -i.orig "/-D.*_BUILD_CPPFLAGS=/$destdir" "$filename"
@@ -248,6 +258,13 @@ if test ! -e "$WORKDIR"/config.log; then
             sed -i.orig "$workdir" "$filename"
             sed -i.orig "$destdir" "$filename"
         fi
+        test -n "${FCFLAGS+x}" || continue
+        test "$(basename "$filename")" != "Makefile" || continue
+        fortran="s|\"(gfortran)\s*$FCFLAGS\s*(-O2)?\s*\"|\"\1 -O2\"|g"
+        fcflags="s|'(FC?FLAGS)=\s*$FCFLAGS\s*(-O2)?\s*'|'\1=-O2'|g"
+        echo removing Fortran compiler flags in "$filename"
+        sed -i.orig -E "$fortran" "$filename"
+        sed -i.orig -E "$fcflags" "$filename"
     done
 fi
 
