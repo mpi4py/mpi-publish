@@ -51,6 +51,7 @@ if test ! -d "$SOURCE"; then
             if test -d "$SOURCE"/modules/yaksa; then
                 cd "$SOURCE"/modules/yaksa
                 echo regenerating yaksa with nesting level 2
+                PYTHONDONTWRITEBYTECODE=1 PYTHONHASHSEED=0 \
                 src/backend/seq/genpup.py --pup-max-nesting 2
                 cd src/backend/seq/pup
                 find . -type f -exec touch -r . {} \;
