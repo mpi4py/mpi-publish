@@ -14,12 +14,15 @@ def walk(topdir):
             dirpath.suffix == ".dist-info"
             and dirpath.parent == topdir
         ):
-            # list any dist-info/licenses/LICENSE* files
+            # list any files in dist-info subdirs first
+            # for example, dist-info/licenses/LICENSE*
+            subfiles = []
             for dirname in dirnames:
-                for dn, _, fns in walk(dirpath / dirname):
-                    for fn in fns:
-                        fn = (dn / fn).relative_to(dirpath)
-                        filenames.append(str(fn))
+                for dpath, _, fnames in walk(dirpath / dirname):
+                    for fname in fnames:
+                        fpath = (dpath / fname).relative_to(dirpath)
+                        subfiles.append(str(fpath))
+            filenames[:0] = subfiles
             del dirnames[:]
             # list any dist-info/RECORD file last
             if "RECORD" in filenames:
