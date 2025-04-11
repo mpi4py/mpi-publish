@@ -17,20 +17,20 @@ on:  # yamllint disable-line rule:truthy
       version:
         description: 'MPI Version'
         required: false
-        default: ''
         type: string
+        default: ''
       release:
         description: 'Release number'
         required: false
-        default: ''
         type: string
+        default: ''
       os-arch:
-        description: "Target OS-Architecture"
+        description: 'Target OS-Architecture'
         required: false
         type: choice
-        default: all
+        default: '*'
         options:
-          - all
+          - '*'
           - Linux
           - Linux-aarch64
           - Linux-x86_64
@@ -38,15 +38,15 @@ on:  # yamllint disable-line rule:truthy
           - macOS-arm64
           - macOS-x86_64
       publish-pypi:
-        description: "Publish to PyPI"
+        description: 'Publish to PyPI'
         required: false
-        default: false
         type: boolean
+        default: false
       publish-anaconda:
-        description: "Publish to Anaconda"
+        description: 'Publish to Anaconda'
         required: false
-        default: false
         type: boolean
+        default: false
 
 jobs:
 

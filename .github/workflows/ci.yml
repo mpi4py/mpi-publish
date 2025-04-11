@@ -5,6 +5,30 @@ permissions:
 
 on:  # yamllint disable-line rule:truthy
   workflow_dispatch:
+    inputs:
+      mpich:
+        description: 'mpich'
+        required: false
+        type: boolean
+        default: true
+      openmpi:
+        description: 'openmpi'
+        required: false
+        type: boolean
+        default: true
+      os-arch:
+        description: 'os-arch'
+        required: false
+        type: choice
+        default: '*'
+        options:
+          - '*'
+          - Linux
+          - Linux-aarch64
+          - Linux-x86_64
+          - macOS
+          - macOS-arm64
+          - macOS-x86_64
   pull_request:
     branches:
       - master
@@ -12,48 +36,63 @@ on:  # yamllint disable-line rule:truthy
 jobs:
 
   mpich-43:
+    if: ${{ !inputs || inputs.mpich }}
     uses: ./.github/workflows/cd-wheel.yml
     with:
+      os-arch: ${{ inputs.os-arch }}
       mpiname: mpich
       version:
 
   mpich-42:
+    if: ${{ !inputs || inputs.mpich }}
     uses: ./.github/workflows/cd-wheel.yml
     with:
+      os-arch: ${{ inputs.os-arch }}
       mpiname: mpich
       version: 4.2.3
 
   mpich-41:
+    if: ${{ !inputs || inputs.mpich }}
     uses: ./.github/workflows/cd-wheel.yml
     with:
+      os-arch: ${{ inputs.os-arch }}
       mpiname: mpich
       version: 4.1.3
 
   mpich-40:
+    if: ${{ !inputs || inputs.mpich }}
     uses: ./.github/workflows/cd-wheel.yml
     with:
+      os-arch: ${{ inputs.os-arch }}
       mpiname: mpich
       version: 4.0.3
 
   mpich-34:
+    if: ${{ !inputs || inputs.mpich }}
     uses: ./.github/workflows/cd-wheel.yml
     with:
+      os-arch: ${{ inputs.os-arch }}
       mpiname: mpich
       version: 3.4.3
 
   openmpi-50:
+    if: ${{ !inputs || inputs.openmpi }}
     uses: ./.github/workflows/cd-wheel.yml
     with:
+      os-arch: ${{ inputs.os-arch }}
       mpiname: openmpi
       version:
 
   openmpi-41:
+    if: ${{ !inputs || inputs.openmpi }}
     uses: ./.github/workflows/cd-wheel.yml
     with:
+      os-arch: ${{ inputs.os-arch }}
       mpiname: openmpi
       version: 4.1.7
 
   wheelhouse:
+    if: ${{ always() && !inputs || inputs.mpich || inputs.openmpi }}
     runs-on: ubuntu-latest
     needs:
       - mpich-43

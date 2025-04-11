@@ -25,12 +25,12 @@ on:  # yamllint disable-line rule:truthy
         type: string
         default: ''
       os-arch:
-        description: "Target OS-Architecture"
+        description: 'Target OS-Architecture'
         required: false
         type: choice
         default: Linux-x86_64
         options:
-          - all
+          - '*'
           - Linux
           - Linux-aarch64
           - Linux-x86_64
