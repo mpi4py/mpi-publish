@@ -258,13 +258,15 @@ if test ! -e "$WORKDIR"/config.log; then
             sed -i.orig "$workdir" "$filename"
             sed -i.orig "$destdir" "$filename"
         fi
-        test -n "${FCFLAGS+x}" || continue
-        test "$(basename "$filename")" != "Makefile" || continue
-        fortran="s|\"(gfortran)\s*$FCFLAGS\s*(-O2)?\s*\"|\"\1 -O2\"|g"
-        fcflags="s|'(FC?FLAGS)=\s*$FCFLAGS\s*(-O2)?\s*'|'\1=-O2'|g"
-        echo removing Fortran compiler flags in "$filename"
-        sed -i.orig -E "$fortran" "$filename"
-        sed -i.orig -E "$fcflags" "$filename"
+        if test "$mpiname" = "mpich"; then
+            confargs='s|".*"|""|g'
+            compiler='s|"([^[:space:]]*).*"|"\1"|g'
+            echo removing configure and compiler info in "$filename"
+            sed -i.orig -E "/HYDRA_CC/             $compiler" "$filename"
+            sed -i.orig -E "/MPICH_COMPILER_(C|F)/ $compiler" "$filename"
+            sed -i.orig -E "/HYDRA_CONFIGURE_ARGS/ $confargs" "$filename"
+            sed -i.orig -E "/MPICH_CONFIGURE_ARGS/ $confargs" "$filename"
+        fi
     done
 fi
 
