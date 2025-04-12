@@ -81,7 +81,7 @@ jobs:
         rows = [
             ("Linux", "aarch64", "ubuntu-24.04-arm"),
             ("Linux", "x86_64",  "ubuntu-24.04"),
-            ("macOS", "arm64",   "macos-14"),
+            ("macOS", "arm64",   "macos-15"),
             ("macOS", "x86_64",  "macos-13"),
         ]
         os, _, arch = "${{ inputs.os-arch }}".partition("-")
