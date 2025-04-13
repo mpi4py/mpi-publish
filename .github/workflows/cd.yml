@@ -58,7 +58,7 @@ jobs:
       release: ${{ inputs.release }}
       os-arch: ${{ inputs.os-arch }}
 
-  publish-pypy:
+  publish-pypi:
     if: ${{ inputs.publish-pypi }}
     runs-on: ubuntu-latest
     needs: wheel
