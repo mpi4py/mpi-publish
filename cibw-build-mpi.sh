@@ -260,7 +260,7 @@ if test ! -e "$WORKDIR"/config.log; then
         fi
         if test "$mpiname" = "mpich"; then
             compiler='s|"([^[:space:]]*).*"|"\1"|g'
-            confargs='s|".*"|"'"${options[@]:3:2}"'"|g'
+            confargs='s|".*"|"'"${options[*]:3:2}"'"|g'
             echo removing configure and compiler info in "$filename"
             sed -i.orig -E "/HYDRA_CC/             $compiler" "$filename"
             sed -i.orig -E "/MPICH_COMPILER_(C|F)/ $compiler" "$filename"
