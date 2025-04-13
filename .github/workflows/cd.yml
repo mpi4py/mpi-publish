@@ -42,6 +42,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: boolean
         default: false
+      publish-testpypi:
+        description: 'Publish to TestPyPI'
+        required: false
+        type: boolean
+        default: false
       publish-anaconda:
         description: 'Publish to Anaconda'
         required: false
@@ -62,9 +67,9 @@ jobs:
     if: ${{ inputs.publish-pypi }}
     runs-on: ubuntu-latest
     needs: wheel
-    environment:  # TODO: update url to pypi.org
+    environment:
       name: pypi
-      url: https://test.pypi.org/p/${{ inputs.mpiname }}
+      url: https://pypi.org/project/${{ inputs.mpiname }}/
     permissions:
       contents: read
       id-token: write
@@ -87,15 +92,45 @@ jobs:
         echo '```'         >> "$GITHUB_STEP_SUMMARY"
       working-directory: dist
 
-    - if: ${{ false }}  # TODO: remove 'if' condition
-      name: Attest wheel artifacts
+    - name: Attest wheel artifacts
       uses: actions/attest-build-provenance@v2
       with:
         subject-path: dist/*.whl
 
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:  # TODO: remove repository-url
+
+  publish-testpypi:
+    if: ${{ inputs.publish-testpypi }}
+    runs-on: ubuntu-latest
+    needs: wheel
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/${{ inputs.mpiname }}/
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+
+    - name: Download wheel artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: dist
+        pattern: wheel-*
+        merge-multiple: true
+
+    - name: Report sha256sum
+      run:  |
+        # Report sha256sum
+        echo '```'         >> "$GITHUB_STEP_SUMMARY"
+        sha256sum -b *.whl >> "$GITHUB_STEP_SUMMARY"
+        echo '```'         >> "$GITHUB_STEP_SUMMARY"
+      working-directory: dist
+
+    - name: Publish to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
         repository-url: https://test.pypi.org/legacy/
 
   publish-anaconda:
