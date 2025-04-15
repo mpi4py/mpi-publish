@@ -103,6 +103,9 @@ jobs:
       - openmpi-50
       - openmpi-41
     steps:
+    - uses: step-security/harden-runner@v2
+      with:
+        egress-policy: audit
     - uses: actions/download-artifact@v4
       with:
         path: wheelhouse
