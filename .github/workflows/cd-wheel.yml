@@ -73,6 +73,7 @@ jobs:
       matrix: ${{ steps.setup.outputs.matrix }}
     steps:
     - uses: step-security/harden-runner@v2
+      with: {egress-policy: audit}
     - id: setup
       shell: python
       name: 'setup build matrix'
