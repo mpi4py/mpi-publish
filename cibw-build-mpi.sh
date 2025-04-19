@@ -497,6 +497,7 @@ rm -f  bin/pmixcc
 rm -f  bin/mpif77
 rm -f  bin/mpif90
 rm -f  bin/mpifort
+rm -f  bin/ortecc
 rm -f  bin/oshrun
 rm -f  lib/*.mod
 rm -f  lib/lib*.a
@@ -518,6 +519,7 @@ rm -fr share/ucx
 rm -f  share/openmpi/mpif77-wrapper-data.txt
 rm -f  share/openmpi/mpif90-wrapper-data.txt
 rm -f  share/openmpi/mpifort-wrapper-data.txt
+rm -f  share/openmpi/ortecc-wrapper-data.txt
 rm -f  share/pmix/pmixcc-wrapper-data.txt
 rm -f  share/*/*.supp
 rm -f  share/*/*/example.conf
@@ -661,7 +663,7 @@ if test "$(uname)" = Darwin; then
 fi
 
 cd "${DESTDIR}${PREFIX}/share/openmpi"
-for cmd in mpicc mpic++ mpicxx mpiCC ortecc; do
+for cmd in mpicc mpic++ mpicxx mpiCC; do
     wrapper_data="$cmd-wrapper-data.txt"
     test -e "$wrapper_data" || continue
     test ! -L "$wrapper_data" || continue
@@ -681,7 +683,7 @@ wrapper_cmd=opal_wrapper
 wrapper_src="$PROJECT/cibw-ompi-wrapper.c"
 wrapper_bin="$WORKDIR/cibw-ompi-wrapper.exe"
 cc -O -DWRAPPER="$wrapper_cmd" "$wrapper_src" -o "$wrapper_bin"
-executables=(mpicc mpic++ mpicxx mpiCC ortecc)
+executables=(mpicc mpic++ mpicxx mpiCC)
 for exe in "${executables[@]}"; do
     test -e "$exe" || continue
     test -L "$exe" || continue
