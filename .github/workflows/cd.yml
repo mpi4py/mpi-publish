@@ -14,29 +14,29 @@ on:  # yamllint disable-line rule:truthy
         options:
           - mpich
           - openmpi
-      version:
-        description: 'MPI Version'
-        required: false
-        type: string
-        default: ''
-      release:
-        description: 'Release number'
-        required: false
-        type: string
-        default: ''
-      os-arch:
-        description: 'Target OS-Architecture'
-        required: false
-        type: choice
-        default: '*'
-        options:
-          - '*'
-          - Linux
-          - Linux-aarch64
-          - Linux-x86_64
-          - macOS
-          - macOS-arm64
-          - macOS-x86_64
+      # version:
+      #   description: 'MPI Version'
+      #   required: false
+      #   type: string
+      #   default: ''
+      # release:
+      #   description: 'Release number'
+      #   required: false
+      #   type: string
+      #   default: ''
+      # os-arch:
+      #   description: 'Target OS-Architecture'
+      #   required: false
+      #   type: choice
+      #   default: '*'
+      #   options:
+      #     - '*'
+      #     - Linux
+      #     - Linux-aarch64
+      #     - Linux-x86_64
+      #     - macOS
+      #     - macOS-arm64
+      #     - macOS-x86_64
       publish-pypi:
         description: 'Publish to PyPI'
         required: false
@@ -59,9 +59,12 @@ jobs:
     uses: ./.github/workflows/cd-wheel.yml
     with:
       mpiname: ${{ inputs.mpiname }}
-      version: ${{ inputs.version }}
-      release: ${{ inputs.release }}
-      os-arch: ${{ inputs.os-arch }}
+      version: ${{ matrix.version }}
+      # release: ${{ inputs.release }}
+      # os-arch: ${{ inputs.os-arch }}
+    strategy:
+      matrix:
+        version: ${{ inputs.mpiname == 'mpich' && fromJSON('["4.3.0", "4.2.3","4.1.3", "4.0.3", "3.4.3"]') || fromJSON('["5.0.7", "4.1.7"]') }}
 
   publish-pypi:
     if: ${{ inputs.publish-pypi }}
