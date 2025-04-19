@@ -746,20 +746,23 @@ if test "$(uname)" = Linux; then
 fi
 
 if test "$(uname)" = Darwin; then
+    tapi() { /Library/Developer/CommandLineTools/usr/bin/tapi "$@"; }
     for linklib in lib*mpi.dylib; do
         target=$(readlink "$linklib")
         unlink "$linklib"
-        idname="@rpath/$target"
-        ldname="@loader_path/$target"
-        ldflags=("${build_ldflags[@]/-Wl,-dead_strip_dylibs}")
-        ldflags+=("-Wl,-reexport_library,$target")
-        cc -shared "${ldflags[@]}" -o "$linklib"
-        install_name_tool -change "$idname" "$ldname" "$linklib"
-        install_name_tool -id "$idname" "$linklib"
-        if test "$(uname -m)" = arm64; then
-            codesign --force --options linker-signed --sign - "$linklib"
-        fi
+        tapi stubify --filetype=tbd-v4 "$target"
+        mv "${target/%.dylib/.tbd}" "${linklib/%.dylib/.tbd}"
     done
+    if test "$mpiname" = "openmpi"; then
+        wrapper_data_dir="${DESTDIR}${PREFIX}/share/openmpi"
+        for cmd in mpicc mpic++ mpicxx mpiCC; do
+            wrapper_data="$wrapper_data_dir/$cmd-wrapper-data.txt"
+            test -e "$wrapper_data" || continue
+            test ! -L "$wrapper_data" || continue
+            sed -i.orig '/dyn_lib_file=/s|\.dylib|\.tbd|' "$wrapper_data"
+            rm "$wrapper_data".orig
+        done
+    fi
 fi
 
 } # fixup-mpi-library()
