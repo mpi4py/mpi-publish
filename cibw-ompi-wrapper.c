@@ -19,7 +19,7 @@
 
 int main(int argc, char *argv[]) {
 
-  char exe[PATH_MAX+32];
+  char exe[PATH_MAX+32] = {0};
   char path[PATH_MAX+32];
   char prefix[PATH_MAX+32];
 
