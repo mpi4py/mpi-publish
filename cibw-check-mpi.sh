@@ -92,21 +92,24 @@ RUN mpiexec -help
 RUN mpiexec -n 3 ./helloworld-c
 RUN mpiexec -n 3 ./helloworld-cxx
 
-if test "$mpiname" = "mpich"; then
-    case $(uname) in
-        Linux)  ch4netmods=(ofi ucx) ;;
-        Darwin) ch4netmods=(ofi) ;;
-    esac
+if test "$mpiname-$(uname)" = "mpich-Linux"; then
     export MPICH_CH4_UCX_CAPABILITY_DEBUG=1
     export MPICH_CH4_OFI_CAPABILITY_DEBUG=1
-    for netmod in "${ch4netmods[@]}"; do
-        printf "testing ch4:%s ... " "$netmod"
+    for netmod in ucx ofi; do
+        printf "testing %s ... " "$netmod"
         export MPICH_CH4_NETMOD="$netmod"
         test "${version%%.*}" -ge 4 || netmod=""
-        ./helloworld-c | grep -i "$netmod" > /dev/null
+        mpiexec -n 1 ./helloworld-c | grep -i "$netmod" > /dev/null
+        for nonlocal in 0 1; do
+            export MPICH_NOLOCAL=$nonlocal
+            for n in $(seq 1 4); do
+                mpiexec -n "$n" ./helloworld-c > /dev/null
+            done
+        done
         printf "OK\n"
     done
     unset MPICH_CH4_UCX_CAPABILITY_DEBUG
     unset MPICH_CH4_OFI_CAPABILITY_DEBUG
     unset MPICH_CH4_NETMOD
+    unset MPICH_NOLOCAL
 fi
