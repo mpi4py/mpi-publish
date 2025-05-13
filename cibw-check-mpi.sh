@@ -113,3 +113,39 @@ if test "$mpiname-$(uname)" = "mpich-Linux"; then
     unset MPICH_CH4_NETMOD
     unset MPICH_NOLOCAL
 fi
+
+if test "$mpiname-$(uname)" = "openmpi-Linux"; then
+    for backend in ofi ucx; do
+        printf "testing %s ... " "$backend"
+        if test "$backend" = "ucx"; then
+            export OMPI_MCA_pml=ucx
+            export OMPI_MCA_osc=ucx
+            export OMPI_MCA_btl=^vader,tcp,openib,uct
+            export OMPI_MCA_opal_common_ucx_tls=tcp
+            export OMPI_MCA_opal_common_ucx_devices=lo
+            export OMPI_MCA_opal_common_ucx_verbose=1
+            check='mca_pml_ucx_init'
+        fi
+        if test "$backend" = "ofi"; then
+            export OMPI_MCA_pml=cm
+            export OMPI_MCA_mtl=ofi
+            export OMPI_MCA_opal_common_ofi_provider_include=tcp
+            export OMPI_MCA_opal_common_ofi_verbose=1
+            check='mtl:ofi:prov.*: tcp'
+        fi
+        mpiexec -n 1 ./helloworld-c 2>&1 | grep -i "$check" > /dev/null
+        for n in $(seq 1 4); do
+            mpiexec -n "$n" ./helloworld-c > /dev/null 2>&1
+        done
+        unset OMPI_MCA_pml
+        unset OMPI_MCA_osc
+        unset OMPI_MCA_mtl
+        unset OMPI_MCA_btl
+        unset OMPI_MCA_opal_common_ucx_tls
+        unset OMPI_MCA_opal_common_ucx_devices
+        unset OMPI_MCA_opal_common_ucx_verbose
+        unset OMPI_MCA_opal_common_ofi_provider_include
+        unset OMPI_MCA_opal_common_ofi_verbose
+        printf "OK\n"
+    done
+fi
