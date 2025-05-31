@@ -4,7 +4,7 @@ set -euo pipefail
 mpiname=${MPINAME:-mpich}
 case "$mpiname" in
     mpich)   version=4.3.0 ;;
-    openmpi) version=5.0.7 ;;
+    openmpi) version=5.0.8 ;;
 esac
 version=${VERSION:-$version}
 release=${RELEASE:-}
