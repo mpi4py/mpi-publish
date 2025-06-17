@@ -36,7 +36,7 @@ on:  # yamllint disable-line rule:truthy
 jobs:
 
   mpich-43:
-    if: ${{ !inputs || inputs.mpich }}
+    if: ${{ github.event_name == 'pull_request' || inputs.mpich }}
     uses: ./.github/workflows/cd-wheel.yml
     with:
       os-arch: ${{ inputs.os-arch }}
@@ -44,7 +44,7 @@ jobs:
       version:
 
   mpich-42:
-    if: ${{ !inputs || inputs.mpich }}
+    if: ${{ github.event_name == 'pull_request' || inputs.mpich }}
     uses: ./.github/workflows/cd-wheel.yml
     with:
       os-arch: ${{ inputs.os-arch }}
@@ -52,7 +52,7 @@ jobs:
       version: 4.2.3
 
   mpich-41:
-    if: ${{ !inputs || inputs.mpich }}
+    if: ${{ github.event_name == 'pull_request' || inputs.mpich }}
     uses: ./.github/workflows/cd-wheel.yml
     with:
       os-arch: ${{ inputs.os-arch }}
@@ -60,7 +60,7 @@ jobs:
       version: 4.1.3
 
   mpich-40:
-    if: ${{ !inputs || inputs.mpich }}
+    if: ${{ github.event_name == 'pull_request' || inputs.mpich }}
     uses: ./.github/workflows/cd-wheel.yml
     with:
       os-arch: ${{ inputs.os-arch }}
@@ -68,7 +68,7 @@ jobs:
       version: 4.0.3
 
   mpich-34:
-    if: ${{ !inputs || inputs.mpich }}
+    if: ${{ github.event_name == 'pull_request' || inputs.mpich }}
     uses: ./.github/workflows/cd-wheel.yml
     with:
       os-arch: ${{ inputs.os-arch }}
@@ -76,7 +76,7 @@ jobs:
       version: 3.4.3
 
   openmpi-50:
-    if: ${{ !inputs || inputs.openmpi }}
+    if: ${{ github.event_name == 'pull_request' || inputs.openmpi }}
     uses: ./.github/workflows/cd-wheel.yml
     with:
       os-arch: ${{ inputs.os-arch }}
@@ -84,7 +84,7 @@ jobs:
       version:
 
   openmpi-41:
-    if: ${{ !inputs || inputs.openmpi }}
+    if: ${{ github.event_name == 'pull_request' || inputs.openmpi }}
     uses: ./.github/workflows/cd-wheel.yml
     with:
       os-arch: ${{ inputs.os-arch }}
@@ -92,7 +92,9 @@ jobs:
       version: 4.1.7
 
   wheelhouse:
-    if: ${{ always() && !inputs || inputs.mpich || inputs.openmpi }}
+    if: >-
+      github.event_name == 'pull_request'
+      || inputs.mpich || inputs.openmpi
     runs-on: ubuntu-latest
     needs:
       - mpich-43
