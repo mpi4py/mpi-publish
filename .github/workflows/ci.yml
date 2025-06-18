@@ -35,6 +35,13 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
 
+  lint:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-python@v5
+    - run: pipx run tox
+
   mpich-43:
     if: ${{ github.event_name == 'pull_request' || inputs.mpich }}
     uses: ./.github/workflows/cd-wheel.yml
@@ -94,7 +101,7 @@ jobs:
   wheelhouse:
     if: >-
       github.event_name == 'pull_request'
-      || inputs.mpich || inputs.openmpi
+      || (always() && (inputs.mpich || inputs.openmpi))
     runs-on: ubuntu-latest
     needs:
       - mpich-43

@@ -5,9 +5,10 @@ build:
 	./wheel-test.sh  dist
 
 lint:
-	codespell *.sh */*.py
+	codespell
+	ruff check -qn
+	ruff format -qn --diff
 	shellcheck *.sh
-	ruff check -qn */*.py
 	yamllint .github/
 
 clean:

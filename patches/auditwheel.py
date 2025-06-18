@@ -7,13 +7,11 @@ from auditwheel.main import main
 
 aw_walk = auditwheel.tools.walk
 
+
 def walk(topdir):
     topdir = pathlib.Path(topdir).resolve(strict=True)
     for dirpath, dirnames, filenames in aw_walk(topdir):
-        if (
-            dirpath.suffix == ".dist-info"
-            and dirpath.parent == topdir
-        ):
+        if dirpath.suffix == ".dist-info" and dirpath.parent == topdir:
             # list any files in dist-info subdirs first
             # for example, dist-info/licenses/LICENSE*
             subfiles = []
@@ -29,6 +27,7 @@ def walk(topdir):
                 filenames.remove("RECORD")
                 filenames.append("RECORD")
         yield dirpath, dirnames, filenames
+
 
 auditwheel.tools.walk = walk
 
