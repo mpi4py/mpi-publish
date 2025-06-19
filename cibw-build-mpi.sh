@@ -19,8 +19,16 @@ case $(uname) in
 esac
 
 if test "$(uname)" = Linux; then
+    # shellcheck disable=SC1091
+    PLATFORM_ID="$(source /etc/os-release && echo "${PLATFORM_ID:-}")"
     if test "${CIBUILDWHEEL}" = 1; then
         yum remove -y libatomic
+        if test "$PLATFORM_ID" = "platform:el8"; then
+            yum install -y rdma-core-devel
+            if test "$(uname -m)" = x86_64; then
+                yum install -y libpsm2-devel
+            fi
+        fi
     fi
 fi
 if test "$(uname)" = Darwin; then
@@ -84,6 +92,15 @@ if test -d "$MODSOURCE"/libfabric-*; then
         echo running configure for OFI
         oficonfigure="$OFISOURCE"/configure
         ofioptions=(--prefix="$PREFIX" --disable-static)
+        if test -f /usr/lib*/librdmacm.so; then
+            ofioptions+=(--enable-verbs=dl)
+        fi
+        if test -f /usr/lib*/libpsm2.so; then
+            ofioptions+=(--enable-psm2=dl)
+        fi
+        if test -f /usr/lib*/libefa.so; then
+            ofioptions+=(--enable-efa=dl)
+        fi
         "$oficonfigure" "${ofioptions[@]}" \
                         CFLAGS="${build_cflags[*]}" \
                         LDFLAGS="${build_ldflags[*]}"
@@ -95,6 +112,9 @@ if test -d "$MODSOURCE"/libfabric-*; then
     done
     for pkg in "${DESTDIR}${PREFIX}"/lib/pkgconfig/libfabric*.pc; do
         sed -i "/prefix\s*=/s|\($PREFIX\)|$DESTDIR\1|g" "$pkg"
+        for dep in rdmacm ibverbs psm2 efa; do
+            sed -i "/Libs\.private:\s*/s|-l$dep\s*||g" "$pkg"
+        done
     done
 fi
 
@@ -181,6 +201,8 @@ if test "$mpiname" = "openmpi"; then
         --prefix="$PREFIX"
         --without-ucx
         --without-ofi
+        --without-psm2
+        --without-verbs
         --without-cuda
         --without-rocm
         --with-hwloc=internal
@@ -284,6 +306,7 @@ rm -f  lib/libuc[mpst]*.a
 rm -f  lib/libuc[mpst]*.la
 rm -f  lib/ucx/libuc[mt]_*.a
 rm -f  lib/ucx/libuc[mt]_*.la
+rm -f  lib/ucx/libucx_perftest_*.*
 rm -fr lib/cmake/ucx
 rm -f  lib/pkgconfig/ucx*.pc
 rm -fr share/ucx
@@ -297,15 +320,18 @@ for lib in libuc[mpst]*.so.?; do
     fi
     patchelf --set-rpath "\$ORIGIN" "$lib"
 done
-patchelf --add-rpath "\$ORIGIN/ucx" libucm.so.?
-patchelf --add-rpath "\$ORIGIN/ucx" libuct.so.?
-for lib in ucx/libuc[mt]_*.so.?; do
+if test -d ucx; then
+    patchelf --add-rpath "\$ORIGIN/ucx" libuc[mpst].so.?
+fi
+for lib in ucx/libuc[mpst]_*.so.?; do
+    if test -f "$lib"; then
+        patchelf --set-rpath "\$ORIGIN" "$lib"
+        patchelf --add-rpath "\$ORIGIN/.." "$lib"
+    fi
     if test -f "$lib".*; then
         mv "$(dirname "$lib")/$(readlink "$lib")" "$lib"
         ln -srf "$lib" "${lib%.*}"
     fi
-    patchelf --set-rpath "\$ORIGIN" "$lib"
-    patchelf --add-rpath "\$ORIGIN/.." "$lib"
 done
 
 } # fixup-ucx()
@@ -317,6 +343,8 @@ rm -fr include/rdma
 rm -f  bin/fi_*
 rm -f  lib/libfabric.a
 rm -f  lib/libfabric.la
+rm -f  lib/libfabric/lib*-fi.a
+rm -f  lib/libfabric/lib*-fi.la
 rm -f  lib/pkgconfig/libfabric.pc
 rm -f  share/man/man?/fabric.?
 rm -f  share/man/man?/fi_*.?
@@ -329,6 +357,15 @@ for lib in libfabric.so.?; do
         ln -sf "$lib" "${lib%.*}"
     fi
     patchelf --set-rpath "\$ORIGIN" "$lib"
+done
+if test -d libfabric; then
+    patchelf --add-rpath "\$ORIGIN/libfabric" libfabric.so.?
+fi
+for lib in libfabric/lib*-fi.so; do
+    if test -f "$lib"; then
+        patchelf --set-rpath "\$ORIGIN" "$lib"
+        patchelf --set-rpath "\$ORIGIN/.." "$lib"
+    fi
 done
 
 } # fixup-ofi()
@@ -350,6 +387,7 @@ rm -f  lib/lib*mpi.la
 rm -f  lib/lib*mpich*.*
 rm -f  lib/lib*mpicxx.*
 rm -f  lib/lib*mpifort.*
+rm -fr lib/cmake
 rm -fr lib/pkgconfig
 rm -fr share
 
@@ -398,10 +436,16 @@ if test "$(uname)" = Linux; then
     if test -f libfabric.so; then
         mkdir -p "$mpiname"
         mv libfabric.* "$mpiname"
+        if test -d libfabric; then
+            mv libfabric "$mpiname"
+        fi
     fi
     if test -f libucp.so; then
         mkdir -p "$mpiname"
-        mv libuc[mpst]*.* ucx "$mpiname"
+        mv libuc[mpst]*.* "$mpiname"
+        if test -d ucx; then
+            mv ucx "$mpiname"
+        fi
     fi
     cd "${DESTDIR}${PREFIX}/lib"
     for lib in lib*.so; do
@@ -536,14 +580,6 @@ for exe in 'mpirun' 'ompi*' 'pmix*' 'prte*' 'opal*' 'orte*'; do
     done < <(find . -name "$exe" -type f)
 done
 
-cd "${DESTDIR}${PREFIX}/lib"
-unset libraries
-for lib in 'lib*.so.*' 'lib*.*.dylib'; do
-    while IFS= read -r filename
-    do libraries+=("$(basename "$filename")")
-    done < <(find . -name "$lib" -type f)
-done
-
 if test "$(uname)" = Linux; then
     cd "${DESTDIR}${PREFIX}/bin"
     for exe in "${executables[@]}"; do
@@ -561,10 +597,16 @@ if test "$(uname)" = Linux; then
     if test -f libfabric.so; then
         mkdir -p "$mpiname"
         mv libfabric.* "$mpiname"
+        if test -d libfabric; then
+            mv libfabric "$mpiname"
+        fi
     fi
     if test -f libucp.so; then
         mkdir -p "$mpiname"
-        mv libuc[mpst]*.* ucx "$mpiname"
+        mv libuc[mpst]*.* "$mpiname"
+        if test -d ucx; then
+            mv ucx "$mpiname"
+        fi
     fi
     for lib in lib*.so; do
         patchelf --set-rpath "\$ORIGIN" "$lib"

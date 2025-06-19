@@ -73,19 +73,22 @@ if test "$mpiname" = "mpich"; then
         "$data"/bin/hydra_*
     )
     libraries=(
-        "$data"/lib/lib*mpi.*
+        "$data"/lib/lib*mpi.*.*
     )
+    if ls "$data"/lib/*/libucp.* > /dev/null 2>&1; then
+        libraries+=(
+            "$data"/lib/*/libuc[mpst]*.*
+        )
+    fi
     if ls "$data"/lib/*/libfabric.* > /dev/null 2>&1; then
         libraries+=(
             "$data"/lib/*/libfabric.*
         )
     fi
-    if ls "$data"/lib/*/libucp.* > /dev/null 2>&1; then
-        libraries+=(
-            "$data"/lib/*/libuc[mpst]*.*
-            "$data"/lib/*/ucx/libuc[mpst]*.*
-        )
-    fi
+    plugins=(
+        "$data"/lib/*/ucx/libuc[mpst]_*.*
+        "$data"/lib/*/libfabric/lib*-fi.*
+    )
 fi
 
 if test "$mpiname" = "openmpi"; then
@@ -106,7 +109,7 @@ if test "$mpiname" = "openmpi"; then
         "$data"/bin/*_wrapper
     )
     libraries=(
-        "$data"/lib/libmpi.*
+        "$data"/lib/libmpi.*.*
         "$data"/lib/libopen-*.*
     )
     if test "${version%%.*}" -ge 5; then
@@ -117,10 +120,11 @@ if test "$mpiname" = "openmpi"; then
             "$data"/lib/openmpi/libprrte.*
         )
     fi
+    runlibs+='|lib(z|util|event.*|hwloc)'$soregex
+    runlibs+='|lib(open-(pal|rte)|pmix|prrte)'$soregex
     if ls "$data"/lib/*/libucp.* > /dev/null 2>&1; then
         libraries+=(
             "$data"/lib/*/libuc[mpst]*.*
-            "$data"/lib/*/ucx/libuc[mpst]*.*
         )
     fi
     if ls "$data"/lib/*/libfabric.* > /dev/null 2>&1; then
@@ -128,17 +132,26 @@ if test "$mpiname" = "openmpi"; then
             "$data"/lib/*/libfabric.*
         )
     fi
-    runlibs+='|lib(z|util|event.*|hwloc)'$soregex
-    runlibs+='|lib(open-(pal|rte)|pmix|prrte)'$soregex
+    plugins=(
+        "$data"/lib/*/ucx/libuc[mpst]_*.*
+        "$data"/lib/*/libfabric/lib*-fi.*
+    )
+fi
+
+deplibs=$runlibs
+if test "$(uname)" = Linux; then
+    deplibs+='|lib(psm2|uct_ib)'$soregex
+    deplibs+='|lib(rdmacm|ibverbs|mlx5|efa)'$soregex
 fi
 
 check-binary() {
-    local dso=$1 out1="" out2=""
+    local dso="$1" deplibs="${2:-$runlibs}"
+    local out1="" out2=""
     echo checking "$dso"...
     test -f "$dso" || (printf "ERROR: file not found\n"; exit 1)
     out1="$(print-runpath "$dso" | grep -vE "$runpath" || true)"
     test -z "$out1" || printf "ERROR: RUNPATH\n%s\n" "$out1"
-    out2="$(print-needed  "$dso" | grep -vE "$runlibs" || true)"
+    out2="$(print-needed  "$dso" | grep -vE "$deplibs" || true)"
     test -z "$out2" || printf "ERROR: NEEDED\n%s\n" "$out2"
     test -z "$out1"
     test -z "$out2"
@@ -171,6 +184,11 @@ done
 for lib in "${libraries[@]-}"; do
     test -n "$lib" || break
     check-binary "$lib"
+done
+for lib in "${plugins[@]-}"; do
+    test -n "$lib" || break
+    test -f "$lib" || break
+    check-binary "$lib" "$deplibs"
 done
 if test -d "$pkgname$libsdir"; then
     echo checking "$pkgname$libsdir"...

@@ -179,8 +179,6 @@ jobs:
           SOURCE="$PWD/package/source"
           WORKDIR="$PWD/package/workdir"
           DESTDIR="$PWD/package/install"
-        CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
-        CIBW_MANYLINUX_X86_64_IMAGE:  manylinux2014
 
     - id: sha256sum
       run: |
