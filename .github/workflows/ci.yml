@@ -29,6 +29,14 @@ on:  # yamllint disable-line rule:truthy
           - macOS
           - macOS-arm64
           - macOS-x86_64
+      manylinux:
+        description: 'manylinux'
+        required: false
+        type: choice
+        default: manylinux_2_28
+        options:
+          - manylinux_2_28
+          - manylinux2014
   pull_request:
     branches:
       - master
@@ -47,6 +55,7 @@ jobs:
     uses: ./.github/workflows/cd-wheel.yml
     with:
       os-arch: ${{ inputs.os-arch }}
+      manylinux: ${{ inputs.manylinux }}
       mpiname: mpich
       version:
 
@@ -55,6 +64,7 @@ jobs:
     uses: ./.github/workflows/cd-wheel.yml
     with:
       os-arch: ${{ inputs.os-arch }}
+      manylinux: ${{ inputs.manylinux }}
       mpiname: mpich
       version: 4.2.3
 
@@ -63,6 +73,7 @@ jobs:
     uses: ./.github/workflows/cd-wheel.yml
     with:
       os-arch: ${{ inputs.os-arch }}
+      manylinux: ${{ inputs.manylinux }}
       mpiname: mpich
       version: 4.1.3
 
@@ -71,6 +82,7 @@ jobs:
     uses: ./.github/workflows/cd-wheel.yml
     with:
       os-arch: ${{ inputs.os-arch }}
+      manylinux: ${{ inputs.manylinux }}
       mpiname: mpich
       version: 4.0.3
 
@@ -79,6 +91,7 @@ jobs:
     uses: ./.github/workflows/cd-wheel.yml
     with:
       os-arch: ${{ inputs.os-arch }}
+      manylinux: ${{ inputs.manylinux }}
       mpiname: mpich
       version: 3.4.3
 
@@ -87,6 +100,7 @@ jobs:
     uses: ./.github/workflows/cd-wheel.yml
     with:
       os-arch: ${{ inputs.os-arch }}
+      manylinux: ${{ inputs.manylinux }}
       mpiname: openmpi
       version:
 
@@ -95,6 +109,7 @@ jobs:
     uses: ./.github/workflows/cd-wheel.yml
     with:
       os-arch: ${{ inputs.os-arch }}
+      manylinux: ${{ inputs.manylinux }}
       mpiname: openmpi
       version: 4.1.7
 

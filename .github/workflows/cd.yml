@@ -37,6 +37,14 @@ on:  # yamllint disable-line rule:truthy
           - macOS
           - macOS-arm64
           - macOS-x86_64
+      manylinux:
+        description: 'manylinux'
+        required: false
+        type: choice
+        default: manylinux_2_28
+        options:
+          - manylinux_2_28
+          - manylinux2014
       publish-pypi:
         description: 'Publish to PyPI'
         required: false
@@ -62,6 +70,7 @@ jobs:
       version: ${{ inputs.version }}
       release: ${{ inputs.release }}
       os-arch: ${{ inputs.os-arch }}
+      manylinux: ${{ inputs.manylinux }}
 
   publish-pypi:
     if: ${{ inputs.publish-pypi }}

@@ -37,6 +37,14 @@ on:  # yamllint disable-line rule:truthy
           - macOS
           - macOS-arm64
           - macOS-x86_64
+      manylinux:
+        description: 'manylinux'
+        required: false
+        type: choice
+        default: manylinux_2_28
+        options:
+          - manylinux_2_28
+          - manylinux2014
   workflow_call:
     inputs:
       mpiname:
@@ -59,6 +67,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
         default: ''
+      manylinux:
+        description: 'manylinux'
+        required: false
+        type: string
+        default: 'manylinux_2_28'
 
 env:
   MPINAME: '${{ inputs.mpiname }}'
@@ -179,6 +192,8 @@ jobs:
           SOURCE="$PWD/package/source"
           WORKDIR="$PWD/package/workdir"
           DESTDIR="$PWD/package/install"
+        CIBW_MANYLINUX_AARCH64_IMAGE: ${{ inputs.manylinux }}
+        CIBW_MANYLINUX_X86_64_IMAGE:  ${{ inputs.manylinux }}
 
     - id: sha256sum
       run: |
