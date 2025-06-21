@@ -40,9 +40,9 @@ exclude = (
 )
 
 if "repair" in sys.argv:
-    sys.argv.append("--only-plat")
+    args = ["--only-plat"]
     for name in exclude:
-        sys.argv.append("--exclude")
-        sys.argv.append(f"lib{name}.so.*")
+        args += ["--exclude", f"lib{name}.so.*"]
+    sys.argv.extend(args)
 
 sys.exit(main())
