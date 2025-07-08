@@ -155,7 +155,7 @@ jobs:
       working-directory: package/source
 
     - id: build
-      uses: pypa/cibuildwheel@v3.0.0
+      uses: pypa/cibuildwheel@v3.0.1
       timeout-minutes: 30
       with:
         package-dir: package
