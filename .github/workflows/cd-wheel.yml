@@ -122,6 +122,8 @@ jobs:
       run: |
         # set macOS deployment target
         echo MACOSX_DEPLOYMENT_TARGET=11.0 >> $GITHUB_ENV
+        # set hostname
+        sudo hostname localhost
         # create gfortran symlink
         cd $(brew --prefix)/bin
         gfortran=$(ls gfortran-* | sort | head -n 1)
