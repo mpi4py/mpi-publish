@@ -96,7 +96,7 @@ jobs:
     with:
       os-arch: ${{ inputs.os-arch }}
       mpiname: openmpi
-      version: 4.1.7
+      version: 4.1.8
 
   wheelhouse:
     if: >-
