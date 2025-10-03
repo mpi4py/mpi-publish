@@ -387,6 +387,7 @@ rm -f  lib/lib*mpi.la
 rm -f  lib/lib*mpich*.*
 rm -f  lib/lib*mpicxx.*
 rm -f  lib/lib*mpifort.*
+rm -f  etc/mpixxx_opts.conf
 rm -fr lib/cmake
 rm -fr lib/pkgconfig
 rm -fr share
