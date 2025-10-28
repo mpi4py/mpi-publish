@@ -126,7 +126,7 @@ jobs:
         sha256sum -b *.whl >> "$GITHUB_STEP_SUMMARY"
         echo '```'         >> "$GITHUB_STEP_SUMMARY"
       working-directory: wheelhouse
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       with:
         name: wheelhouse
         path: wheelhouse/*.whl
