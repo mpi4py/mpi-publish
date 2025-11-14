@@ -21,7 +21,7 @@ esac
 if test "$(uname)" = Linux; then
     # shellcheck disable=SC1091
     PLATFORM_ID="$(source /etc/os-release && echo "${PLATFORM_ID:-}")"
-    if test "${CIBUILDWHEEL}" = 1; then
+    if test "${CIBUILDWHEEL-}" = 1; then
         yum remove -y libatomic
         if test "$PLATFORM_ID" = "platform:el8"; then
             yum install -y rdma-core-devel
@@ -119,15 +119,22 @@ if test -d "$MODSOURCE"/libfabric-*; then
 fi
 
 if test "$mpiname" = "mpich"; then
-    case $(uname) in
-        Linux)  netmod=ucx,ofi ;;
-        Darwin) netmod=ofi ;;
-    esac
+    if test "${version%%.*}" -lt 4; then
+        case $(uname) in
+            Linux)  device="ch3:nemesis" ;;
+            Darwin) device="ch3:nemesis" ;;
+        esac
+    else
+        case $(uname) in
+            Linux)  device="ch4:ucx,ofi" ;;
+            Darwin) device="ch4:ofi" ;;
+        esac
+    fi
     options=(
         CC=cc
         CXX=c++
         --prefix="$PREFIX"
-        --with-device="ch4:$netmod"
+        --with-device="$device"
         --with-pm=hydra:gforker
         --with-ucx=embedded
         --with-libfabric=embedded
@@ -144,10 +151,10 @@ if test "$mpiname" = "mpich"; then
         --disable-libxml2
         --disable-dependency-tracking
     )
-    if [[ "$netmod" != *ucx* ]]; then
+    if [[ "$device" != *ucx* ]]; then
         options=("${options[@]/--with-ucx=embedded}")
     fi
-    if [[ "$netmod" != *ofi* ]]; then
+    if [[ "$device" != *ofi* ]]; then
         options=("${options[@]/--with-libfabric=embedded}")
     fi
     if test -d "$SOURCE"/modules/ucx-*; then

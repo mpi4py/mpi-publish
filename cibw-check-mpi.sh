@@ -61,7 +61,7 @@ if test "$mpiname" = "mpich"; then
     RUN mpichversion
 fi
 
-if test "$mpiname" = "mpich"; then
+if test "$mpiname" = "mpich" && test "${version%%.*}" -ge 4; then
     RUN command -v mpivars
     RUN mpivars -nodesc | grep 'Category .* has'
 fi
@@ -92,13 +92,12 @@ RUN mpiexec -help
 RUN mpiexec -n 3 ./helloworld-c
 RUN mpiexec -n 3 ./helloworld-cxx
 
-if test "$mpiname-$(uname)" = "mpich-Linux"; then
+if test "$mpiname-$(uname)" = "mpich-Linux" && test "${version%%.*}" -ge 4; then
     export MPICH_CH4_UCX_CAPABILITY_DEBUG=1
     export MPICH_CH4_OFI_CAPABILITY_DEBUG=1
     for netmod in ucx ofi; do
         printf "testing %s ... " "$netmod"
         export MPICH_CH4_NETMOD="$netmod"
-        test "${version%%.*}" -ge 4 || netmod=""
         mpiexec -n 1 ./helloworld-c | grep -i "$netmod" > /dev/null
         for nonlocal in 0 1; do
             export MPICH_NOLOCAL=$nonlocal

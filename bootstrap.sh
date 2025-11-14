@@ -96,15 +96,11 @@ else
     check Release "$release" || (echo "error: RELEASE!=$release" && exit 1)
 fi
 
-if test "$(uname)" = "Linux"; then
-    case "$mpiname" in
-        mpich)   MODSOURCE="$SOURCE"/modules   ;;
-        openmpi) MODSOURCE="$SOURCE"/3rd-party ;;
-    esac
+boostrap-ofi() {
     ofigithub="https://github.com/ofiwg/libfabric"
     ofiurlbase="$ofigithub/releases/download/v$ofiversion"
     ofitarball="libfabric-$ofiversion.tar.bz2"
-    ofidestdir="$MODSOURCE"/"${ofitarball%%.tar.*}"
+    ofidestdir="$1"/"${ofitarball%%.tar.*}"
     if test ! -d "$ofidestdir"; then
         if test ! -f "$ofitarball"; then
             echo downloading "$ofiurlbase"/"$ofitarball"...
@@ -119,10 +115,13 @@ if test "$(uname)" = "Linux"; then
     else
         echo reusing directory "$ofidestdir"...
     fi
+}
+
+boostrap-ucx() {
     ucxgithub="https://github.com/openucx/ucx"
     ucxurlbase="$ucxgithub/releases/download/v$ucxversion"
     ucxtarball="ucx-$ucxversion.tar.gz"
-    ucxdestdir="$MODSOURCE"/"${ucxtarball%%.tar.*}"
+    ucxdestdir="$1"/"${ucxtarball%%.tar.*}"
     if test ! -d "$ucxdestdir"; then
         if test ! -f "$ucxtarball"; then
             echo downloading "$ucxurlbase"/"$ucxtarball"...
@@ -140,6 +139,17 @@ if test "$(uname)" = "Linux"; then
         fi
     else
         echo reusing directory "$ucxdestdir"...
+    fi
+}
+
+if test "$(uname)" = "Linux"; then
+    if test "$mpiname" = "mpich" && test "${version%%.*}" -ge 4; then
+        boostrap-ofi "$SOURCE"/modules
+        boostrap-ucx "$SOURCE"/modules
+    fi
+    if test "$mpiname" = "openmpi"; then
+        boostrap-ofi "$SOURCE"/3rd-party
+        boostrap-ucx "$SOURCE"/3rd-party
     fi
 fi
 
