@@ -141,6 +141,7 @@ if test "$mpiname" = "mpich"; then
         --with-hwloc=embedded
         --with-yaksa=embedded
         --with-custom-version-string="$pypiurl"
+        --enable-mpi-abi
         --disable-cxx
         --disable-doc
         --disable-debug
@@ -190,6 +191,9 @@ if test "$mpiname" = "mpich"; then
     fi
     if test "${version}" \< "4.3.0"; then
         options=("${options[@]/--with-device=ch4:ucx,ofi/--with-device=ch4:ofi,ucx}")
+    fi
+    if test "${version}" \< "5.0.0"; then
+        options=("${options[@]/--enable-mpi-abi}")
     fi
     if test "$(uname)" = Linux; then
         export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}:$DESTDIR$PREFIX/lib"
@@ -389,8 +393,8 @@ rm -f  bin/mpifort
 rm -f  bin/parkill
 rm -f  lib/libmpl.*
 rm -f  lib/libopa.*
-rm -f  lib/lib*mpi.a
-rm -f  lib/lib*mpi.la
+rm -f  lib/lib*mpi*.a
+rm -f  lib/lib*mpi*.la
 rm -f  lib/lib*mpich*.*
 rm -f  lib/lib*mpicxx.*
 rm -f  lib/lib*mpifort.*
@@ -426,6 +430,9 @@ for script in "${scripts[@]}"; do
     sed -i.orig s:-lmpicxx::g "$script"
     rm "$script".orig
 done
+if test -f mpicxx_abi && test -f mpic++; then
+    ln -sf mpicxx_abi mpic++_abi
+fi
 
 if test "$(uname)" = Linux; then
     cd "${DESTDIR}${PREFIX}/bin"
@@ -465,11 +472,15 @@ if test "$(uname)" = Linux; then
         fi
     done
     if test -d "$mpiname"; then
-        patchelf --add-rpath "\$ORIGIN/$mpiname" libmpi.so.*
+        for lib in libmpi*.so.*; do
+            patchelf --add-rpath "\$ORIGIN/$mpiname" "$lib"
+        done
     fi
     cd "${DESTDIR}${PREFIX}/lib"
     find . -name '*.so' -type l -delete
-    ln -s libmpi.so.* libmpi.so
+    for lib in libmpi*.so.*; do
+        ln -sf "$lib" "${lib%.*}"
+    done
 fi
 
 if test "$(uname)" = Darwin; then
@@ -484,21 +495,27 @@ if test "$(uname)" = Darwin; then
         done
     done
     cd "${DESTDIR}${PREFIX}/lib"
-    for lib in "$libmpi" "$libpmpi"; do
-        install_name_tool -id "@rpath/$lib" "$lib"
-        install_name_tool -add_rpath "@loader_path/" "$lib"
+    for mpi in "mpi" "mpi_abi"; do
+        test -f "lib$mpi".*.dylib || continue
+        libmpi=$(ls lib$mpi.*.dylib)
+        libpmpi=$(ls libp$mpi.*.dylib)
+        for lib in "$libmpi" "$libpmpi"; do
+            install_name_tool -id "@rpath/$lib" "$lib"
+            install_name_tool -add_rpath "@loader_path/" "$lib"
+        done
+        install_name_tool -change "$libdir/$libpmpi" "@rpath/$libpmpi" "$libmpi"
     done
-    install_name_tool -change "$libdir/$libpmpi" "@rpath/$libpmpi" "$libmpi"
     cd "${DESTDIR}${PREFIX}/lib"
     find . -name '*.dylib' -type l -delete
-    ln -s "$libmpi" libmpi.dylib
-    ln -s "$libpmpi" libpmpi.dylib
+    for lib in lib*mpi*.*.dylib; do
+        ln -s "$lib" "${lib%%.*}".dylib
+    done
 fi
 
 if test "$(uname)-$(uname -m)" = Darwin-arm64; then
     binaries=(
-        "${DESTDIR}${PREFIX}"/lib/libpmpi.*.dylib
-        "${DESTDIR}${PREFIX}"/lib/libmpi.*.dylib
+        "${DESTDIR}${PREFIX}"/lib/libpmpi*.*.dylib
+        "${DESTDIR}${PREFIX}"/lib/libmpi*.*.dylib
         "${DESTDIR}${PREFIX}"/bin/hydra*
         "${DESTDIR}${PREFIX}"/bin/mpich*
         "${DESTDIR}${PREFIX}"/bin/mpirun
@@ -788,7 +805,7 @@ fixup-mpi-library() {
 cd "${DESTDIR}${PREFIX}/lib"
 
 if test "$(uname)" = Linux; then
-    for linklib in lib*mpi.so; do
+    for linklib in lib*mpi*.so; do
         target=$(readlink "$linklib")
         unlink "$linklib"
         echo "INPUT($target)" > "$linklib"
@@ -797,7 +814,8 @@ fi
 
 if test "$(uname)" = Darwin; then
     tapi() { /Library/Developer/CommandLineTools/usr/bin/tapi "$@"; }
-    for linklib in lib*mpi.dylib; do
+    for linklib in lib*mpi.dylib lib*mpi_abi.dylib; do
+        test -f "$linklib" || continue
         target=$(readlink "$linklib")
         unlink "$linklib"
         tapi stubify --filetype=tbd-v4 "$target"

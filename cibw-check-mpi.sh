@@ -92,6 +92,19 @@ RUN mpiexec -help
 RUN mpiexec -n 3 ./helloworld-c
 RUN mpiexec -n 3 ./helloworld-cxx
 
+if command -v mpicc_abi > /dev/null; then
+    RUN command -v mpicc_abi
+    RUN mpicc_abi -show
+    RUN mpicc_abi helloworld.c -o helloworld-c-abi
+    RUN mpiexec -n 3 ./helloworld-c-abi
+fi
+if command -v mpicxx_abi > /dev/null; then
+    RUN command -v mpicxx_abi
+    RUN mpicxx_abi -show
+    RUN mpicxx_abi helloworld.cxx -o helloworld-cxx-abi
+    RUN mpiexec -n 3 ./helloworld-cxx-abi
+fi
+
 if test "$mpiname-$(uname)" = "mpich-Linux" && test "${version%%.*}" -ge 4; then
     export MPICH_CH4_UCX_CAPABILITY_DEBUG=1
     export MPICH_CH4_OFI_CAPABILITY_DEBUG=1

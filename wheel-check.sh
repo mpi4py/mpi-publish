@@ -41,7 +41,7 @@ fi
 if test "$(uname)" = Darwin; then
     runpath='@executable_path/../lib/|@loader_path/'
     soregex='\..*\.dylib'
-    runlibs='lib(mpi|pmpi|System|objc)'$soregex
+    runlibs='lib((mpi|pmpi)(_abi)?|System|objc)'$soregex
     runlibs=$runlibs'|(Foundation|IOKit)\.framework'
     libsdir=.dylibs
     print-runpath() { otool -l "$1" | sed -n '/RPATH/{n;n;p;}'; }
@@ -57,7 +57,6 @@ fi
 if test "$mpiname" = "mpich"; then
     headers=(
         "$data"/include/mpi.h
-        "$data"/include/mpio.h
     )
     scripts=(
         "$data"/bin/mpicc
@@ -89,6 +88,29 @@ if test "$mpiname" = "mpich"; then
         "$data"/lib/*/ucx/libuc[mpst]_*.*
         "$data"/lib/*/libfabric/lib*-fi.*
     )
+    if test "${version%%.*}" -ge 4; then
+        headers+=(
+            "$data"/include/mpi_proto.h
+        )
+    fi
+    if test "${version%%.*}" -lt 5; then
+        headers+=(
+            "$data"/include/mpio.h
+        )
+    fi
+    if test "${version%%.*}" -ge 5; then
+        headers+=(
+            "$data"/include/mpi_abi.h
+        )
+        scripts+=(
+            "$data"/bin/mpicc_abi
+            "$data"/bin/mpic++_abi
+            "$data"/bin/mpicxx_abi
+        )
+        libraries+=(
+            "$data"/lib/lib*mpi_abi.*.*
+        )
+    fi
 fi
 
 if test "$mpiname" = "openmpi"; then

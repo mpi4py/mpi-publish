@@ -32,6 +32,7 @@ if test "$(uname)" = Linux; then
 fi
 if test "$(uname)" = Darwin; then
     export MACOSX_DEPLOYMENT_TARGET=11.0
+    export CIBW_ENABLE=pypy
     export CIBW_BUILD='pp311-*'
     export SOURCE="$PWD/$SOURCE"
     export WORKDIR="$PWD/$WORKDIR"
