@@ -4,7 +4,7 @@ set -euo pipefail
 mpiname=${MPINAME:-mpich}
 case "$mpiname" in
     mpich)   version=5.0.0 ;;
-    openmpi) version=5.0.9 ;;
+    openmpi) version=5.0.10 ;;
 esac
 version=${VERSION:-$version}
 release=${RELEASE:-}
@@ -76,13 +76,17 @@ if test ! -d "$SOURCE"; then
             echo "PRTE_CFLAGS_BEFORE_PICKY = @CFLAGS@" >> "$makefile"
         done
     fi
-    if test "$mpiname" = "openmpi" && test "${version}" \< "5.0.5"; then
-        if test "$(uname)" = "Darwin" && test -d "$SOURCE"/3rd-party; then
-            cd "$SOURCE"/3rd-party/libevent-*
-            echo running autogen.sh on "$(basename "$(pwd)")"
-            ./autogen.sh
-            cd "$PROJECT"
-        fi
+    if test "$mpiname" = "openmpi" \
+       && test "${version}" == "5.0.0" \
+       && test "${version}" \> "5.0.0" \
+       && test "${version}" \< "5.0.5" \
+       && test "$(uname)" = "Darwin" \
+       && test -d "$SOURCE"/3rd-party
+    then
+        cd "$SOURCE"/3rd-party/libevent-*
+        echo running autogen.sh on "$(basename "$(pwd)")"
+        ./autogen.sh
+        cd "$PROJECT"
     fi
     echo writing package metadata ...
     echo "Name: $mpiname" > "$PACKAGE/METADATA"
