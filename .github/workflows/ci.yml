@@ -124,7 +124,7 @@ jobs:
     - uses: step-security/harden-runner@v2
       with:
         egress-policy: audit
-    - uses: actions/download-artifact@v7
+    - uses: actions/download-artifact@v8
       with:
         path: wheelhouse
         pattern: wheel-*
