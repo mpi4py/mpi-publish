@@ -164,7 +164,7 @@ jobs:
         output-dir:  wheelhouse
       env:
         CIBW_BUILD_FRONTEND: "build[uv]"
-        CIBW_BUILD: "cp313-*"
+        CIBW_BUILD: "cp314-*"
         CIBW_SKIP:  "*musllinux*"
         CIBW_ARCHS: "${{ matrix.arch }}"
         CIBW_BEFORE_ALL: >-

@@ -10,7 +10,7 @@ read -r SOURCE_DATE_EPOCH < "$SOURCE"/source-date-epoch
 export SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH
 
 export CIBW_BUILD_FRONTEND='build[uv]'
-export CIBW_BUILD='cp313-*'
+export CIBW_BUILD='cp314-*'
 export CIBW_SKIP='*musllinux*'
 export CIBW_ARCHS=$ARCHLIST
 export CIBW_BEFORE_ALL='bash {project}/cibw-build-mpi.sh'
