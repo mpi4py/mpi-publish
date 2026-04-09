@@ -43,6 +43,10 @@ if test ! -d "$SOURCE"; then
         patch -p1 -i "$patch" -d "$SOURCE"
     fi
     if test "$mpiname" = "mpich"; then
+        if grep -q -E 'rc[0-9]+' <<< "${version}"; then
+            so_version='/libmpi_so_version=/ s/0:0:0/12:0:0/g'
+            sed -i.orig "$so_version" "$SOURCE"/configure
+        fi
         if test "${version}" \< "4.2.0"; then
             disable_doc='s/^\(install-data-local:\s\+\)\$/\1#\$/'
             sed -i.orig "$disable_doc" "$SOURCE"/Makefile.in
