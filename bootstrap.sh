@@ -9,7 +9,7 @@ esac
 version=${VERSION:-$version}
 release=${RELEASE:-}
 
-ucxversion=1.20.0
+ucxversion=1.20.1
 ofiversion=2.5.1
 ucxversion=${UCXVERSION:-$ucxversion}
 ofiversion=${OFIVERSION:-$ofiversion}
