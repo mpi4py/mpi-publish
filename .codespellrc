@@ -1,3 +1,14 @@
+#-*- mode: conf -*-
+
 [codespell]
-skip = dist,patches,.git,.tox,.*_cache
-ignore-words-list = pevent
+skip =
+  dist,
+  patches,
+  ./package/source,
+  ./package/workdir,
+  ./package/install,
+  .git,
+  .tox,
+  .*_cache
+ignore-words-list =
+  pevent,

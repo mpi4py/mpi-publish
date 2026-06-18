@@ -31,18 +31,4 @@ def walk(topdir):
 
 auditwheel.tools.walk = walk
 
-exclude = (
-    "rdmacm",
-    "ibverbs",
-    "mlx5",
-    "psm2",
-    "efa",
-)
-
-if "repair" in sys.argv:
-    args = ["--only-plat"]
-    for name in exclude:
-        args += ["--exclude", f"lib{name}.so.*"]
-    sys.argv.extend(args)
-
 sys.exit(main())

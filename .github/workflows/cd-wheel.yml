@@ -160,29 +160,10 @@ jobs:
       uses: pypa/cibuildwheel@v4.1.0
       timeout-minutes: 30
       with:
+        extras: uv
         package-dir: package
         output-dir:  wheelhouse
-      env:
-        CIBW_BUILD_FRONTEND: "build[uv]"
-        CIBW_BUILD: "cp314-*"
-        CIBW_SKIP:  "*musllinux*"
-        CIBW_ARCHS: "${{ matrix.arch }}"
-        CIBW_BEFORE_ALL: >-
-          bash {project}/cibw-build-mpi.sh
-        CIBW_BEFORE_BUILD: >-
-          bash {project}/cibw-patch-cmd.sh
-        CIBW_TEST_COMMAND: >-
-          bash {project}/cibw-check-mpi.sh
-        CIBW_ENVIRONMENT_LINUX: >-
-          SOURCE="/project/package/source"
-          WORKDIR="/project/package/workdir"
-          DESTDIR="/project/package/install"
-        CIBW_ENVIRONMENT_MACOS: >-
-          SOURCE="$PWD/package/source"
-          WORKDIR="$PWD/package/workdir"
-          DESTDIR="$PWD/package/install"
-        CIBW_MANYLINUX_AARCH64_IMAGE: "manylinux_2_28"
-        CIBW_MANYLINUX_X86_64_IMAGE:  "manylinux_2_28"
+        config-file: cibuildwheel.toml
 
     - id: sha256sum
       run: |

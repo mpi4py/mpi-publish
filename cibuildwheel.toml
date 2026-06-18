@@ -1,0 +1,19 @@
+[tool.cibuildwheel]
+build = "cp314-*"
+archs = "native"
+skip = "*musllinux*"
+build-frontend = "build[uv]"
+before-all = "bash {project}/cibw-build-mpi.sh"
+before-build = "bash {project}/cibw-patch-cmd.sh"
+test-command = "bash {project}/cibw-check-mpi.sh"
+repair-wheel-command = "bash {project}/cibw-repair.sh -w {dest_dir} {wheel}"
+
+[tool.cibuildwheel.linux.environment]
+SOURCE  = "/project/package/source"
+WORKDIR = "/project/package/workdir"
+DESTDIR = "/project/package/install"
+
+[tool.cibuildwheel.macos.environment]
+SOURCE  = "$PWD/package/source"
+WORKDIR = "$PWD/package/workdir"
+DESTDIR = "$PWD/package/install"

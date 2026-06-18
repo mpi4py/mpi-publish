@@ -747,8 +747,8 @@ done
 
 cd "${DESTDIR}${PREFIX}/bin"
 wrapper_cmd=opal_wrapper
-wrapper_src="$PROJECT/cibw-ompi-wrapper.c"
-wrapper_bin="$WORKDIR/cibw-ompi-wrapper.exe"
+wrapper_src="$PROJECT/ompi-wrapper.c"
+wrapper_bin="$WORKDIR/ompi-wrapper.exe"
 cc -O -DWRAPPER="$wrapper_cmd" "$wrapper_src" -o "$wrapper_bin"
 executables=(mpicc mpic++ mpicxx mpiCC)
 for exe in "${executables[@]}"; do
@@ -767,8 +767,8 @@ else
 fi
 mv "$executor" "$wrapper"
 ln -s "$wrapper" "$executor"
-wrapper_src="$PROJECT/cibw-ompi-wrapper.c"
-wrapper_bin="$WORKDIR/cibw-ompi-wrapper.exe"
+wrapper_src="$PROJECT/ompi-wrapper.c"
+wrapper_bin="$WORKDIR/ompi-wrapper.exe"
 cc -O -DWRAPPER="$wrapper" "$wrapper_src" -o "$wrapper_bin"
 executables=(mpirun mpiexec orterun)
 for exe in "${executables[@]}"; do
