@@ -10,7 +10,7 @@ version=${VERSION:-$version}
 release=${RELEASE:-}
 
 ucxversion=1.20.0
-ofiversion=2.4.0
+ofiversion=2.5.1
 ucxversion=${UCXVERSION:-$ucxversion}
 ofiversion=${OFIVERSION:-$ofiversion}
 
