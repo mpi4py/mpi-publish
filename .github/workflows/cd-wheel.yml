@@ -114,7 +114,7 @@ jobs:
         egress-policy: audit
 
     - id: checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - id: setup-macOS
       if: ${{ runner.os == 'macOS' }}
