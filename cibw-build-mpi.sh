@@ -841,6 +841,19 @@ if test "$(uname)" = Darwin; then
     fi
 fi
 
+if test "$(uname)" = Darwin; then
+    for libmpi in libmpi.*.dylib libmpi_abi.*.dylib; do
+        libpmpi=$(echo "$libmpi" | sed -E 's|libmpi|libpmpi|')
+        test ! -f "$libpmpi" || continue
+        cc -O -dynamiclib \
+           -rpath "@loader_path/" -reexport_library "$libmpi" \
+           -install_name "@rpath/$libpmpi" -o "$libpmpi"
+        cc -O -dynamiclib \
+           -rpath "@loader_path/" -reexport_library "$libpmpi" \
+           -install_name "@rpath/$libmpi" -o "${libmpi%%.*}.dylib"
+    done
+fi
+
 } # fixup-mpi-library()
 
 echo fixing UCX install tree
