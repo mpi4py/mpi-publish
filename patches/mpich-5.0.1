@@ -1,0 +1,29 @@
+diff -up a/configure b/configure
+--- a/configure	2026-04-10 17:48:34.000000000 +0300
++++ b/configure	2026-04-10 17:48:34.000000000 +0300
+@@ -5137,12 +5137,13 @@ fi
+ 
+ if test "$enable_versioning" = "yes" ; then
+    ABIVERSIONFLAGS="-version-info \$(ABIVERSION)"
+-   ABI_ABIVERSIONFLAGS="-version-info libmpi_abi_so_verion_m4"
++   ABI_ABIVERSIONFLAGS="-version-info 1:0:0"
+ else
+    ABIVERSIONFLAGS="-avoid-version"
+    ABI_ABIVERSIONFLAGS="-avoid-version"
+ fi
+ export ABIVERSIONFLAGS
++export ABI_ABIVERSIONFLAGS
+ 
+ 
+ 
+diff -up a/Makefile.in b/Makefile.in
+--- a/Makefile.in	2026-04-10 17:48:32.000000000 +0300
++++ b/Makefile.in	2026-04-10 17:48:32.000000000 +0300
+@@ -8353,6 +8353,7 @@ am__define_uniq_tagged_files = \
+ VPATH = @VPATH@
+ ABIVERSION = @ABIVERSION@
+ ABIVERSIONFLAGS = @ABIVERSIONFLAGS@
++ABI_ABIVERSIONFLAGS = -version-info 1:0:0
+ ACLOCAL = @ACLOCAL@
+ ADDRESS_KIND = @ADDRESS_KIND@
+ AMTAR = @AMTAR@
