@@ -138,6 +138,8 @@ if test "$mpiname" = "mpich"; then
         --with-pm=hydra:gforker
         --with-ucx=embedded
         --with-libfabric=embedded
+        --with-mpl=embedded
+        --with-json=embedded
         --with-hwloc=embedded
         --with-yaksa=embedded
         --with-custom-version-string="$pypiurl"
@@ -485,25 +487,31 @@ fi
 
 if test "$(uname)" = Darwin; then
     libdir="$PREFIX/lib"
-    libmpi=$(basename "${DESTDIR}$libdir"/libmpi.*.dylib)
-    libpmpi=$(basename "${DESTDIR}$libdir"/libpmpi.*.dylib)
+    libmpi=$(echo "${DESTDIR}$libdir"/libmpi.*.dylib)
+    libpmpi=$(echo "${DESTDIR}$libdir"/libpmpi.*.dylib)
     cd "${DESTDIR}${PREFIX}/bin"
     for exe in "${executables[@]}"; do
         install_name_tool -add_rpath "@executable_path/../lib/" "$exe"
         for lib in "$libmpi" "$libpmpi"; do
-            install_name_tool -change "$libdir/$lib" "@rpath/$lib" "$exe"
+            test -f "$lib" || continue
+            lib=$(basename "$lib")
+            old="$libdir/$lib" new="@rpath/$lib"
+            install_name_tool -change "$old" "$new" "$exe"
         done
     done
     cd "${DESTDIR}${PREFIX}/lib"
     for mpi in "mpi" "mpi_abi"; do
         test -f "lib$mpi".*.dylib || continue
-        libmpi=$(ls lib$mpi.*.dylib)
-        libpmpi=$(ls libp$mpi.*.dylib)
+        libmpi=$(echo lib$mpi.*.dylib)
+        libpmpi=$(echo libp$mpi.*.dylib)
         for lib in "$libmpi" "$libpmpi"; do
+            test -f "$lib" || continue
             install_name_tool -id "@rpath/$lib" "$lib"
             install_name_tool -add_rpath "@loader_path/" "$lib"
         done
-        install_name_tool -change "$libdir/$libpmpi" "@rpath/$libpmpi" "$libmpi"
+        test -f "$libpmpi" || continue
+        old="$libdir/$libpmpi" new="@rpath/$libpmpi"
+        install_name_tool -change "$old" "$new" "$libmpi"
     done
     cd "${DESTDIR}${PREFIX}/lib"
     find . -name '*.dylib' -type l -delete
@@ -523,7 +531,7 @@ if test "$(uname)-$(uname -m)" = Darwin-arm64; then
         "${DESTDIR}${PREFIX}"/bin/mpiexec*
     )
     for bin in  "${binaries[@]}"; do
-        test ! -L "$bin" || continue
+        test -f "$bin" -a ! -L "$bin" || continue
         codesign --force --options linker-signed --sign - "$bin"
     done
 fi
