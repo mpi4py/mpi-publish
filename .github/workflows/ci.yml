@@ -39,7 +39,7 @@ jobs:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
     - run: pipx run tox
 
   mpich-50:
