@@ -216,6 +216,9 @@ if test "$mpiname" = "openmpi"; then
         --without-verbs
         --without-cuda
         --without-rocm
+        --without-lz4
+        --without-zlibng
+        --without-zstd
         --with-hwloc=internal
         --with-libevent=internal
         --with-pmix=internal
@@ -244,6 +247,7 @@ if test "$mpiname" = "openmpi"; then
     fi
     generated_files+=(ompi/tools/ompi_info/Makefile)
     generated_files+=(oshmem/tools/oshmem_info/Makefile)
+    generated_files+=(3rd-party/openpmix/src/Makefile)
     generated_files+=(3rd-party/openpmix/src/tools/*/Makefile)
     generated_files+=(3rd-party/prrte/src/tools/*/Makefile)
     generated_files+=(opal/include/opal_config.h)
@@ -647,7 +651,7 @@ if test "$(uname)" = Linux; then
             libevent*.so.*
             libhwloc.so.*
             libpmix.so.*
-            libprrte.so.*
+            lib*prrte.so.*
         )
         for lib in "${dependencies[@]}"; do
             test -f "$lib" || continue
@@ -662,12 +666,22 @@ if test "$(uname)" = Linux; then
         for exe in "${executables[@]}"; do
             patchelf --add-rpath "$exepath" ../bin/"$exe"
         done
-        patchelf --add-rpath "$libpath" libmpi.so.*
-        patchelf --add-rpath "$libpath" libopen-*.so.*
+        libraries=(
+            libmpi*.so.*
+            libopen-*.so.*
+            libopen_*.so.*
+        )
+        for lib in "${libraries[@]}"; do
+            test -f "$lib" || continue
+            patchelf --add-rpath "$libpath" "$lib"
+        done
     fi
     cd "${DESTDIR}${PREFIX}/lib"
     find . -name '*.so' -type l -delete
-    ln -s libmpi.so.* libmpi.so
+    for lib in libmpi*.so.* libopen_mpi.so.*; do
+        test -f "$lib" || continue
+        ln -sf "$lib" "${lib%.*}"
+    done
 fi
 
 if test "$(uname)" = Darwin; then
@@ -706,7 +720,7 @@ if test "$(uname)" = Darwin; then
             libevent*.*.dylib
             libhwloc.*.dylib
             libpmix.*.dylib
-            libprrte.*.dylib
+            lib*prrte.*.dylib
         )
         for lib in "${dependencies[@]}"; do
             test -f "$lib" || continue
@@ -721,19 +735,31 @@ if test "$(uname)" = Darwin; then
         for exe in "${executables[@]}"; do
             install_name_tool -add_rpath "$exepath" ../bin/"$exe"
         done
-        install_name_tool -add_rpath "$libpath" libmpi.*.dylib
-        install_name_tool -add_rpath "$libpath" libopen-*.*.dylib
+        libraries=(
+            libmpi*.*.dylib
+            libopen-*.*.dylib
+            libopen_*.*.dylib
+        )
+        for lib in "${libraries[@]}"; do
+            test -f "$lib" || continue
+            install_name_tool -add_rpath "$libpath" "$lib"
+        done
     fi
     cd "${DESTDIR}${PREFIX}/lib"
     find . -name '*.dylib' -type l -delete
-    ln -s libmpi.*.dylib libmpi.dylib
+    for lib in libmpi*.*.dylib libopen_mpi.*.dylib; do
+        test -f "$lib" || continue
+        ln -s "$lib" "${lib%%.*}".dylib
+    done
 fi
 
 cd "${DESTDIR}${PREFIX}/share/openmpi"
-for cmd in mpicc mpic++ mpicxx mpiCC; do
+for cmd in mpicc mpic++ mpicxx mpiCC mpicc_abi; do
     wrapper_data="$cmd-wrapper-data.txt"
     test -e "$wrapper_data" || continue
     test ! -L "$wrapper_data" || continue
+    flags="\(compiler=[^ ]*\) -std=gnu23"
+    sed -i.orig "s:^$flags$:\1:" "$wrapper_data"
     flags="\(linker_flags=\) *"
     rpath="-Wl,-rpath,@{libdir}"
     sed -i.orig "s:^$flags$:\1$rpath:" "$wrapper_data"
@@ -750,7 +776,7 @@ wrapper_cmd=opal_wrapper
 wrapper_src="$PROJECT/ompi-wrapper.c"
 wrapper_bin="$WORKDIR/ompi-wrapper.exe"
 cc -O -DWRAPPER="$wrapper_cmd" "$wrapper_src" -o "$wrapper_bin"
-executables=(mpicc mpic++ mpicxx mpiCC)
+executables=(mpicc mpic++ mpicxx mpiCC mpicc_abi)
 for exe in "${executables[@]}"; do
     test -e "$exe" || continue
     test -L "$exe" || continue
@@ -784,15 +810,17 @@ if test "$(uname)-$(uname -m)" = Darwin-arm64; then
            "${DESTDIR}${PREFIX}"/lib/openmpi/libevent*.*.dylib
            "${DESTDIR}${PREFIX}"/lib/openmpi/libhwloc.*.dylib
            "${DESTDIR}${PREFIX}"/lib/openmpi/libpmix.*.dylib
-           "${DESTDIR}${PREFIX}"/lib/openmpi/libprrte.*.dylib
+           "${DESTDIR}${PREFIX}"/lib/openmpi/lib*prrte.*.dylib
        )
     fi
     binaries+=(
+        "${DESTDIR}${PREFIX}"/lib/libmpi*.*.dylib
         "${DESTDIR}${PREFIX}"/lib/libopen-*.*.dylib
-        "${DESTDIR}${PREFIX}"/lib/libmpi.*.dylib
+        "${DESTDIR}${PREFIX}"/lib/libopen_*.*.dylib
         "${DESTDIR}${PREFIX}"/bin/*
     )
     for bin in  "${binaries[@]}"; do
+        test -f "$bin" || continue
         test ! -L "$bin" || continue
         codesign --force --options linker-signed --sign - "$bin"
     done

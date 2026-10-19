@@ -1,0 +1,22 @@
+diff --git a/ompi/mca/osc/ucx/osc_ucx_request.h b/ompi/mca/osc/ucx/osc_ucx_request.h
+index 5f6144b6b6..9162e80415 100644
+--- a/ompi/mca/osc/ucx/osc_ucx_request.h
++++ b/ompi/mca/osc/ucx/osc_ucx_request.h
+@@ -87,7 +87,7 @@ OBJ_CLASS_DECLARATION(ompi_osc_ucx_accumulate_request_t);
+         req = (ompi_osc_ucx_generic_request_t*) item;                                   \
+         OMPI_REQUEST_INIT(&req->super.super, false);                                          \
+         req->super.super.req_mpi_object.win = win;                                            \
+-        req->super.super.req_complete = false;                                                \
++        req->super.super.req_complete = NULL;                                                 \
+         req->super.super.req_state = OMPI_REQUEST_ACTIVE;                                     \
+         req->super.super.req_status.MPI_ERROR = MPI_SUCCESS;                                  \
+         req->super.module = NULL;                                                             \
+@@ -108,7 +108,7 @@ OBJ_CLASS_DECLARATION(ompi_osc_ucx_accumulate_request_t);
+         req = (ompi_osc_ucx_accumulate_request_t*) item;                                \
+         OMPI_REQUEST_INIT(&req->super.super, false);                                          \
+         req->super.super.req_mpi_object.win = win;                                            \
+-        req->super.super.req_complete = false;                                                \
++        req->super.super.req_complete = NULL;                                                 \
+         req->super.super.req_state = OMPI_REQUEST_ACTIVE;                                     \
+         req->super.super.req_status.MPI_ERROR = MPI_SUCCESS;                                  \
+         req->super.module = NULL;                                                             \

@@ -47,6 +47,8 @@ if test "$mpiname" = "openmpi"; then
     export OMPI_MCA_rmaps_base_oversubscribe=true
     export OMPI_MCA_rmaps_default_mapping_policy=:oversubscribe
     export PRTE_MCA_rmaps_default_mapping_policy=:oversubscribe
+    export OMPI_MCA_mapby=:oversubscribe  # v6.0.x
+    export PRTE_MCA_mapby=:oversubscribe  # v6.0.x
     if test "${version%%.*}" -lt 4 -a "$(id -u)" -eq 0; then
         mpiexec() { set -- command mpiexec --allow-run-as-root "$@"; "$@"; }
     fi
