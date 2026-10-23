@@ -189,7 +189,9 @@ if test "$mpiname" = "mpich"; then
     otherlicenses=(
         "$SOURCE"/modules/hwloc/COPYING
         "$SOURCE"/modules/json-c/COPYING
+        "$SOURCE"/modules/mydef_boot/LICENSE
         "$SOURCE"/modules/yaksa/COPYRIGHT
+        "$SOURCE"/src/mpi/datatype/typerep/yaksa/COPYRIGHT
     )
 fi
 if test "$mpiname" = "openmpi"; then
