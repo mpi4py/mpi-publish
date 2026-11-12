@@ -139,10 +139,23 @@ if test "$mpiname" = "openmpi"; then
             "$data"/lib/openmpi/libevent*.*
             "$data"/lib/openmpi/libhwloc.*
             "$data"/lib/openmpi/libpmix.*
-            "$data"/lib/openmpi/libprrte.*
+            "$data"/lib/openmpi/lib*prrte.*
+        )
+    fi
+    if test "${version%%.*}" -qe 6; then
+        headers+=(
+            "$data"/include/standard_abi/mpi.h
+        )
+        wrappers+=(
+            "$data"/bin/mpicc_abi
+        )
+        libraries+=(
+            "$data"/lib/libmpi_abi.*
+            "$data"/lib/libopen_mpi.*
         )
     fi
     runlibs+='|lib(z|util|event.*|hwloc)'$soregex
+    runlibs+='|lib(open_mpi|ompi-prrte)'$soregex
     runlibs+='|lib(open-(pal|rte)|pmix|prrte)'$soregex
     if ls "$data"/lib/*/libucp.* > /dev/null 2>&1; then
         libraries+=(
