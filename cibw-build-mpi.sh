@@ -862,6 +862,29 @@ if test "$(uname)" = Darwin; then
     fi
 fi
 
+if test "$mpiname" = "openmpi"; then
+    if test -f libopen_mpi.so; then
+        target="libmpi-stub.so"
+        soname=$(patchelf --print-soname libmpi.so.*)
+        python3 "$PROJECT"/ompi-ldstub.py "${DESTDIR}${PREFIX}" | \
+            cc -fPIC -shared \
+               -Oz -s -nostdlib \
+               -fno-asynchronous-unwind-tables \
+               -Wl,--build-id=none -Wl,--gc-sections \
+               -Wl,-soname,"$soname" -o "$target" -x c -
+        chmod -x "$target"
+        echo "INPUT($target)" > "libmpi.so"
+    fi
+    wrapper_data_dir="${DESTDIR}${PREFIX}/share/openmpi"
+    for cmd in mpicc mpic++ mpicxx mpiCC; do
+        wrapper_data="$wrapper_data_dir/$cmd-wrapper-data.txt"
+        test -e "$wrapper_data" || continue
+        test ! -L "$wrapper_data" || continue
+        sed -i.orig '/libs=/s| *-lopen_mpi||' "$wrapper_data"
+        rm "$wrapper_data".orig
+    done
+fi
+
 } # fixup-mpi-library()
 
 echo fixing UCX install tree
